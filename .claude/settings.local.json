@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Read(//private/tmp/**)",
+      "Bash(npx create-expo-app@latest bexhearts-init --template blank-typescript --no-install)",
+      "Bash(cp -r /tmp/bexhearts-init/assets /Users/Ebuka/Projects/bexhearts/)",
+      "Bash(cp /tmp/bexhearts-init/tsconfig.json /Users/Ebuka/Projects/bexhearts/)",
+      "Bash(rm -rf /tmp/bexhearts-init)",
+      "Bash(npm install:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

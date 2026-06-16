@@ -1,0 +1,71 @@
+export const colors = {
+  primary: {
+    50: '#F0F1F8',
+    100: '#D9DCF0',
+    200: '#B3B9E0',
+    300: '#8D96D1',
+    400: '#6773C1',
+    500: '#3D4A8A',
+    600: '#313B6E',
+    700: '#252C53',
+    800: '#181D37',
+    900: '#0C0F1C',
+  },
+
+  secondary: {
+    50: '#FDF8F0',
+    100: '#FAECD4',
+    200: '#F5D9A9',
+    300: '#F0C67E',
+    400: '#EBB353',
+    500: '#D4963A',
+    600: '#AA782E',
+    700: '#7F5A23',
+    800: '#553C17',
+    900: '#2A1E0C',
+  },
+
+  accent: {
+    50: '#F2F7F4',
+    100: '#DDE9E1',
+    200: '#BBD3C3',
+    300: '#99BDA5',
+    400: '#77A787',
+    500: '#5A8A6A',
+    600: '#486E55',
+    700: '#365340',
+    800: '#24372A',
+    900: '#121C15',
+  },
+
+  neutral: {
+    50: '#FAFAF8',
+    100: '#F5F5F1',
+    200: '#E8E8E2',
+    300: '#D4D4CC',
+    400: '#A8A89E',
+    500: '#7C7C72',
+    600: '#5C5C54',
+    700: '#3E3E38',
+    800: '#2A2A26',
+    900: '#1A1A17',
+  },
+
+  success: '#4A8A5A',
+  warning: '#D49A3A',
+  error: '#C05252',
+  info: '#5A7A9A',
+
+  background: '#FAFAF8',
+  surface: '#FFFFFF',
+  surfaceElevated: '#FFFFFF',
+  overlay: 'rgba(26, 26, 23, 0.5)',
+
+  text: {
+    primary: '#1A1A17',
+    secondary: '#5C5C54',
+    tertiary: '#A8A89E',
+    inverse: '#FAFAF8',
+    link: '#3D4A8A',
+  },
+} as const;
