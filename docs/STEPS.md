@@ -8,7 +8,7 @@
 > - A step is **Done when** `npm run typecheck && npm run lint && npm test` is green **and** its manual check passes.
 > - **Migrations:** when a step needs schema, you only *write* `supabase/migrations/0000X_*.sql`. The owner applies it in Supabase Studio (local now, VPS later). Never run it yourself. After it's applied, regenerate types: `supabase gen types typescript --local > src/types/database.ts`.
 >
-> **👉 Current position:** _Stage A, Step A1 — not started._ Nothing has been verified against a live database yet. Update this marker as you advance.
+> **👉 Current position:** _Stage A, Step A1 — commit DONE (pushed to `main` 2026-06-13); CI (M2) still to do._ Next up: A1·M2 (GitHub Actions) then A2 (boot local Supabase). Nothing verified against a live database yet. Update this marker as you advance.
 >
 > Stage map: **A** foundation · **B** auth · **C** onboarding/linking · **D** core-loop hardening · **E** engagement layer · **F** monetization · **G** notifications · **H** quality/polish · **I** production backend · **J** release. (Maps to PROGRESS Phases 0→10.)
 

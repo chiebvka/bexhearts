@@ -66,7 +66,7 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 - [x] Path alias `@/* → src/*`, ESLint, Jest configured
 - [x] Folder architecture (api / components / features / services / stores / theme)
 - [x] `.env.example` with all required vars; placeholder-detection so missing paid keys don't crash
-- [ ] **Initial git commit** — repo has ZERO commits; everything is staged but never committed. Do this first.
+- [x] **Initial git commit** — done 2026-06-13; pushed to `github.com/chiebvka/bexhearts` (`main`).
 - [ ] CI (GitHub Actions: typecheck + lint + test on PR)
 
 ## Phase 1 — Database & backend
