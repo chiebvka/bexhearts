@@ -106,6 +106,7 @@
 6. **Compounding system** — keep every winner's pattern; let the library make the next post easier and smarter.
 7. **Human gate on the things that matter** — proposals and posting rules get reviewed before they bake in; automate production, not judgment.
 8. **Faceless & multi-account scalable** — but warm new accounts by hand; automate only aged ones.
+9. **Monetization model = free trial → hard paywall (no freemium), billing per-COUPLE** (locked 2026-06-17). The invited partner inherits the subscription — never a second paywall. The trial unlocks everything, so content should sell the *during-trial* "aha" (invite partner → first devotional together) that converts trial → paid. Solo is a *state, not a segment* — we never market to singles.
 
 ## 2.2 Feature → content-angle map
 > Update this table whenever features change in `PROGRESS.md`. Each angle is a content seed; pair with a hook from §2.4.

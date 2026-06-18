@@ -8,7 +8,7 @@
 > - A step is **Done when** `npm run typecheck && npm run lint && npm test` is green **and** its manual check passes.
 > - **Migrations:** when a step needs schema, you only *write* `supabase/migrations/0000X_*.sql`. The owner applies it in Supabase Studio (local now, VPS later). Never run it yourself. After it's applied, regenerate types: `supabase gen types typescript --local > src/types/database.ts`.
 >
-> **👉 Current position:** _Stage A, Step A1 — commit DONE (pushed to `main` 2026-06-13); CI (M2) still to do._ Next up: A1·M2 (GitHub Actions) then A2 (boot local Supabase). Nothing verified against a live database yet. Update this marker as you advance.
+> **👉 Current position (2026-06-17):** A1 ✓ committed (`main`). A2 in progress — local Supabase booted; still confirm schema applied in Studio + `.env` anon key + regen types. A3 in progress — `npm start` runs; iOS-sim Expo Go download hit a transient socket error (retry `i`, disable VPN, or use a physical device). **Now beginning Stage B (auth) on branch `authflow`.** Build + unit tests can proceed in parallel; on-device manual verification waits on A3 being green. A1·M2 (CI) still pending.
 >
 > Stage map: **A** foundation · **B** auth · **C** onboarding/linking · **D** core-loop hardening · **E** engagement layer · **F** monetization · **G** notifications · **H** quality/polish · **I** production backend · **J** release. (Maps to PROGRESS Phases 0→10.)
 
@@ -37,53 +37,72 @@
 **Flips in PROGRESS:** Phase 1 — TS types item.
 
 ### Step A3 — App boots & reaches sign-in
-**Goal:** `npm start` → app launches in a simulator and lands on the sign-in screen with no red-screen.
+**Goal:** `npm start` → app launches and lands on the sign-in screen with no red-screen.
 **Depends on:** A2.
 **Modules:**
-- M1 — Run on iOS sim + Android emulator; fix any env/build breakage.
-**Verify:** sign-in screen renders on both platforms.
-**Done when:** clean boot on both; no console errors on the auth route.
+- M1 — `npm start` in its own terminal (Metro is long-running; keep it open). In the dev menu press **`i`** (iOS sim), **`a`** (Android emulator), or scan the **QR** with a physical phone (`w` = web). If the iOS-sim Expo Go download errors (`UND_ERR_SOCKET`), just retry `i`; if it persists, disable any VPN/proxy or use a physical device.
+- M2 — Run `npx expo install --fix` to clear the "packages should be updated" warnings (uses Expo's SDK-matched versions, not `npm update`); re-run tests; commit as a small chore.
+- M3 — Fix any env/build breakage so the sign-in screen renders.
+**Physical-device note:** a phone can't reach `127.0.0.1` — to use auth/data on a real device, set `EXPO_PUBLIC_SUPABASE_URL` to the Mac's LAN IP and restart with `npx expo start -c`. (For UI eyeballing only, not needed.) Push/RevenueCat/Superwall/native social-auth don't work in Expo Go — those need a dev build (Step J1).
+**Verify:** sign-in screen renders (sim and/or physical device).
+**Done when:** clean boot; no console errors on the auth route; version warnings cleared.
 
 ---
 
 ## STAGE B — Auth (PROGRESS Phase 2)
+> Auth + onboarding (Stage C) are **ONE user funnel** — build them to feel seamless. Decisions locked 2026-06-17 (see PROGRESS "Auth & onboarding decisions"). Build + unit tests can proceed before A3 is fully green; on-device manual verification waits on the app running. Branch: `authflow`.
 
-### Step B1 — Auth foundation
-**Goal:** a user can sign up, sign in, sign out, with sessions stored securely and routes gated correctly.
-**Depends on:** A3.
-**Modules:**
-- M1 — Harden the Supabase client → encrypted `LargeSecureStore` (`aes-js` + `expo-secure-store` + `react-native-get-random-values`) per Supabase docs, replacing plain AsyncStorage in `src/services/supabase/client.ts` *(test: storage wrapper set/get/remove round-trips)*.
-- M2 — Sign-up: form + zod schema + `useAuth.signUp` + error states *(test: schema validation + hook happy/error paths with mocked Supabase)*.
-- M3 — Sign-in + sign-out *(test: same pattern)*.
-- M4 — Verify route gating in `app/index.tsx` (auth → onboarding → couple → tabs).
-**Verify:** sign up a fresh user → land on onboarding; kill/reopen app → session persists; sign out → back to sign-in.
-**Done when:** green + the manual flow above works on a simulator.
-**Flips in PROGRESS:** Phase 2 — auth, session, gating; secure storage.
+### Step B1 — Auth foundation (email/password + secure session + gating)
+**Goal:** sign up / sign in / sign out with email, securely-stored persistent sessions, correct route gating, "last used" hint.
+**Depends on:** A3 (for manual verify only).
+**Modules (each = build + unit test):**
+- M1 — Harden the Supabase client → encrypted `LargeSecureStore` (`aes-js` + `expo-secure-store` + `react-native-get-random-values`), replacing plain AsyncStorage in `src/services/supabase/client.ts` *(test: storage wrapper set/get/remove round-trips)*.
+- M2 — Email sign-up: form + zod schema + `useAuth.signUp` + error states *(test: schema + hook happy/error with mocked Supabase)*.
+- M3 — Email sign-in + sign-out *(test: same pattern)*.
+- M4 — Persistent session: confirm `autoRefreshToken`/`persistSession`; session survives app restart; stub a re-auth gate for sensitive actions *(test: store hydration)*.
+- M5 — "Last used" hint: persist last sign-in method (MMKV); show a "Last used" tag on that method when returning signed-out *(test: persistence helper)*.
+- M6 — Verify route gating in `app/index.tsx` (auth → onboarding → couple → tabs).
+**Verify:** sign up fresh → onboarding; kill/reopen → session persists; sign out → sign-in shows "last used".
+**Done when:** green + manual flow on a simulator/device.
+**Flips in PROGRESS:** Phase 2 — email auth, session, gating, secure storage, "last used".
 
-### Step B2 — Password reset deep link (fixes Bug #3)
-**Goal:** the password-reset email link actually opens the app and lets the user set a new password.
+### Step B2 — Password reset via 6-digit OTP code (closes Bug #3)
+**Goal:** reliable mobile password reset with an emailed code — no deep link.
 **Depends on:** B1.
 **Modules:**
-- M1 — Create the `reset-password` route in `app/`; handle the Supabase `PASSWORD_RECOVERY` event / recovery token from the `bexhearts://` deep link *(test: handler updates password via mocked Supabase)*.
-- M2 — New-password form + zod + success/redirect.
-**Verify:** request reset → open the link from Inbucket (`:55324`) → set new password → sign in with it.
-**Done when:** green + the manual reset round-trip works.
-**Flips in PROGRESS:** Phase 2 — reset deep link; removes Bug #3.
+- M1 — Configure the Supabase recovery email template to send `{{ .Token }}` (6-digit code) instead of a magic link *(config; carry to prod in Stage I)*.
+- M2 — "Forgot password" → enter email → trigger the code send; switch the existing screen from "sends link" to "sends code" *(test: hook)*.
+- M3 — "Enter code + new password" screen → `verifyOtp({ type: 'recovery' })` → `updateUser({ password })` + success/redirect *(test: schema + hook)*.
+**Verify:** request reset → read the code from Inbucket (`:55324`) → enter code + new password → sign in with it.
+**Done when:** green + reset round-trip works. **Resolves Bug #3** (deep-link approach dropped).
+**Flips in PROGRESS:** Phase 2 — OTP reset; removes Bug #3.
 
-### Step B3 — Account deletion
+### Step B3 — Social sign-in (Apple + Google)
+**Goal:** one-tap sign-in with Apple and Google.
+**Depends on:** B1. **Native verification needs a dev build (Step J1)** — build the wiring now, verify on the dev build.
+**Modules:**
+- M1 — Apple sign-in button wired to `authService.signInWithApple()` (iOS) *(test: hook)*.
+- M2 — Google sign-in: provider config + button + handler *(test: hook)*.
+- M3 — Always show Apple whenever Google is shown (App Store rule); ensure "last used" (B1·M5) covers social methods.
+**Verify:** on a dev build, Apple + Google each create/sign-in a user and land in the funnel.
+**Done when:** green; wiring complete (manual verify deferred to J1).
+**Flips in PROGRESS:** Phase 2 — social sign-in (Apple + Google).
+
+### Step B4 — Account deletion
 **Goal:** a signed-in user can permanently delete their account (App Store requirement).
 **Depends on:** B1.
 **Modules:**
 - M1 — Migration: a `delete_my_account()` SECURITY DEFINER RPC (or edge function) that removes the auth user + cascades *(write file; owner applies)*.
-- M2 — Settings UI entry + confirm dialog + call + sign-out *(test: hook calls RPC, clears stores)*.
+- M2 — Settings UI entry + confirm dialog (re-auth per the session decision) + call + sign-out *(test: hook calls RPC, clears stores)*.
 **Verify:** delete a test account → user + their rows gone in Studio → app returns to sign-in.
 **Done when:** green + verified in Studio.
 **Flips in PROGRESS:** Phase 2 — account deletion.
-> Apple Sign-In stays deferred to **Step J1** (needs a dev build to test).
 
 ---
 
 ## STAGE C — Onboarding & partner linking (PROGRESS Phase 3 — the make-or-break flow)
+> **Funnel order (locked 2026-06-17):** Welcome/value → Sign up (Stage B) → Profile (name) → Relationship stage (C1) → 1–2 personalization Qs + plan summary (C1b) → 🔓 **Paywall: 7-day free trial, per-couple** (Superwall; placement here, full wiring in Stage F) → Partner invite/link (C2) → Dashboard. Auth + onboarding are one UX funnel.
+> **Solo = a state, not a segment:** single-player-safe features work; two-sided features are locked-until-partner empty states (locked, NOT paywalled). One wall (paywall), one carrot (partner).
 
 ### Step C1 — Relationship-stage capture
 **Goal:** onboarding records the couple's stage (dating/engaged/married) for stage-aware content + paywalls.
@@ -95,12 +114,23 @@
 **Done when:** green + value persisted.
 **Flips in PROGRESS:** Phase 1 relationship-stage migration; Phase 3 stage question.
 
+### Step C1b — Personalization + plan summary + paywall placement
+**Goal:** capture 1–2 personalization answers, show a personalized plan summary, then trigger the onboarding paywall (free trial).
+**Depends on:** C1. Paywall *wiring* is Stage F (per-couple) — here we only place the trigger in the funnel.
+**Modules:**
+- M1 — 1–2 personalization questions ("what do you want to grow in?") stored on profile/couple *(test: schema + write hook)*.
+- M2 — Personalized plan-summary screen ("Here's your couple's journey…").
+- M3 — Trigger the Superwall paywall (7-day free trial) at this point; must no-op gracefully when keys are placeholders (dev) so the funnel continues to partner-link.
+**Verify:** funnel reaches the paywall after the summary; in dev (no keys) it skips cleanly to partner-link.
+**Done when:** green + funnel order correct.
+**Flips in PROGRESS:** Phase 3 onboarding funnel + personalization questions.
+
 ### Step C2 — Two-user partner linking, end-to-end (the never-run flow)
 **Goal:** two real users link into one couple and both see each other.
 **Depends on:** C1.
 **Modules:**
 - M1 — Invite-code collision retry in `createCouple` (catch unique-violation → regenerate) *(test)*.
-- M2 — "Waiting for partner" state: partner A (code generated, B not joined) can use the app solo; partner-dependent UI degrades gracefully.
+- M2 — **Solo-mode** (partner not yet linked): single-player-safe features work (devotional + personal reflection, personal prayer, streak); two-sided features show locked-until-partner empty states; gentle resend-invite nudges *(test: gating by `isLinked`)*.
 - M3 — Run the full two-user smoke test (README "Part 3").
 **Verify:** A generates code → B signs up + enters it → both land on the dashboard showing each other's avatar; RLS lets each read shared data, denies cross-couple.
 **Done when:** green + the two-user flow works against local Supabase.

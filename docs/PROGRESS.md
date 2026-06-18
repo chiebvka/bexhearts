@@ -25,6 +25,15 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 - **Beachhead audience: the dating → engaged → newlywed journey.** Functionality serves all couples; marketing, ASO, and the first content packs target these three stages with stage-specific messaging (e.g. "christian dating boundaries", "christian premarital", "newlywed devotional") all funneling into the one app.
 - **Product implication:** onboarding must ask relationship stage (dating / engaged / married + duration), stored on the couple, so devotional/date/boundary content can be stage-relevant and paywalls stage-targeted. See Phase 3 item and the migration note in Phase 1.
 
+**Auth & onboarding decisions (locked 2026-06-17, owner-approved — auth + onboarding are ONE user funnel):**
+- **Sign-up:** Apple + Google + email/password. Show a "last used" hint on the previously-used method when returning signed-out. (Apple is required by the App Store whenever Google is offered.)
+- **Session:** persistent / stay-logged-in (access token auto-refreshes; refresh token long-lived). Re-authenticate only for sensitive actions (delete account, change password). No forced re-login.
+- **Password reset:** 6-digit email OTP **code** only — the deep-link approach is DROPPED. This is how Bug #3 is resolved (not by fixing the dead link).
+- **Onboarding funnel order:** Welcome/value → Sign up → Profile basics (name) → Relationship stage → 1–2 personalization Qs → personalized plan summary → 🔓 Paywall (7-day free trial) → Partner invite/link → Dashboard (today's devotional = first "aha").
+- **Paywall model:** free trial → **hard paywall (NO freemium)**. Fires after the plan-summary, before partner-link, via Superwall.
+- **Billing is per-COUPLE, not per-person.** One partner subscribes/trials; the partner who joins via invite INHERITS the entitlement and must NEVER hit a second paywall. The couple is the billing unit — the `premium` entitlement is granted to whoever links into the couple.
+- **Solo is a STATE, not a SEGMENT.** A single person *can* use it, but we never build/position/market for solo faith growth. The solo experience is deliberately ~70% complete: single-player-safe features work (read devotional + personal reflection, personal prayer journal, streak); two-sided features (daily-question reveal, check-in comparison, partner reflections, "praying for you", shared memories) render as **locked-until-partner** empty states (locked, NOT paywalled). One wall (paywall), one carrot (partner). No celebrated "I'm solo" path in onboarding — assume couple-intent; solo is the graceful fallback.
+
 **Pillars — two layers:**
 
 *Depth core (the moat — mostly built):*
@@ -88,8 +97,9 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 - [x] Session persistence + auth state listener + store hydration (`AuthProvider`)
 - [x] Route gating in `app/index.tsx`: unauthenticated → sign-in; no profile → onboarding; no couple → partner-invite; else → tabs
 - [x] Forgot-password screen sends reset email
-- [~] Apple Sign-In — `authService.signInWithApple()` + config plugin exist; no UI button wired into the sign-in screen; untestable until a dev build exists
-- [ ] **Password reset deep-link handler** — reset email redirects to `bexhearts://reset-password` but no such route exists in `app/`; the link goes nowhere (see Bug #3)
+- [~] **Social sign-in (Apple + Google)** — `authService.signInWithApple()` + config plugin exist; Google not yet added; no UI buttons wired; both untestable until a dev build (Step J1). Apple required by the App Store whenever Google is offered.
+- [ ] **"Last used" sign-in hint** — persist the last-used method locally (MMKV); show a "Last used" tag on that button when returning signed-out.
+- [ ] **Password reset via 6-digit OTP code** (DECISION 2026-06-17) — configure the Supabase recovery email template to send `{{ .Token }}`; verify in-app with `verifyOtp({ type: 'recovery' })` → `updateUser({ password })`. Deep-link approach dropped; **this resolves Bug #3**. The forgot-password screen switches from "sends link" to "sends code".
 - [ ] Secure session storage — swap plain AsyncStorage for the encrypted LargeSecureStore pattern (aes-js + expo-secure-store) per Supabase docs. Pre-launch requirement, not a dev blocker
 - [ ] Account deletion (App Store REQUIRES this for apps with accounts)
 
@@ -99,10 +109,12 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 - [x] Partner linking via `link_partner` RPC with self-link/already-linked guards (`usePartnerLink`)
 - [x] Share/copy invite code UI
 - [ ] **End-to-end verification with two real users against local Supabase** — never been run; do this before anything else once the stack is up
-- [ ] Handle the "waiting for partner" state gracefully (partner A generated a code but B hasn't joined: A can use the app solo, but partner-dependent UI should degrade)
+- [ ] **Solo-mode behavior** (DECISION 2026-06-17 — solo is a STATE, not a segment): when `partner_b_id` is null, land in "solo mode" — single-player-safe features work (today's devotional + personal reflection, personal prayer journal, streak); two-sided features (daily-question reveal, check-in comparison, partner reflections, "praying for you", shared memories) render as locked-until-partner empty states (locked, NOT paywalled); gentle resend-invite nudges. No solo-specific features/content/marketing.
 - [ ] Invite code collision retry (`createCouple` would throw on the rare unique-violation; catch & regenerate)
 - [ ] Avatar upload during profile setup (needs Phase 1 storage bucket + `expo-image-picker` — not yet a dependency)
 - [ ] Relationship-stage question in onboarding (dating / engaged / married + how long) — stored on the couple; depends on the Phase 1 relationship-stage migration. Keep onboarding ≤1 extra screen
+- [ ] **Onboarding funnel order** (DECISION 2026-06-17): Welcome/value → Sign up → Profile (name) → Relationship stage → 1–2 personalization Qs → plan summary → 🔓 Paywall (7-day free trial, per-couple) → Partner invite/link → Dashboard. Auth + onboarding are one UX funnel (Stages B+C in `docs/STEPS.md`).
+- [ ] **Personalization questions** (1–2, e.g. "what do you want to grow in?" — prayer life / communication / etc.) + a personalized plan-summary screen immediately before the paywall so it feels earned.
 
 ## Phase 4 — Core features (all CRUD wired; none verified against a live DB)
 - [x] **Devotionals** — today's devotional, history (30 days), detail screen, complete-with-reflection (`src/api/devotionals.ts`) — *has Bug #2*
@@ -135,6 +147,8 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 - [ ] Real keys in env; end-to-end sandbox purchase test on a dev build
 - [ ] Decide & enforce the free/premium feature split consistently (currently: check-ins + boundaries gated; devotional/date `is_premium` flags exist but are not enforced anywhere)
 - [ ] **Shift the gating model toward content-volume gating** (decision 2026-06-13): candidate split — free = today's devotional + limited daily questions + basic widget; premium = full history, all challenges, unlimited questions, partner-comparison views, memories. Faith audiences convert better on "more of the thing" than on locked features. Reconcile with the check-ins+boundaries gating above and the Phase 4B features
+- [ ] **Per-COUPLE billing** (DECISION 2026-06-17 — most important monetization wiring): the `premium` entitlement belongs to the COUPLE, not the individual. One partner trials/subscribes; the partner who links in INHERITS it and never sees a second paywall. Grant/propagate the entitlement to whoever joins the couple (RevenueCat `appUserID` strategy + a couple-level entitlement flag; reconcile with the dead `couples.subscription_tier` column in Phase 1).
+- [ ] **Paywall model = free trial → hard paywall (NO freemium)** (DECISION 2026-06-17): Superwall paywall fires in onboarding after the plan-summary, before partner-link, offering a 7-day free trial; trial unlocks everything; post-trial without subscribing = locked. Solo users hit ONE wall (this paywall), never a second partner-wall.
 - [ ] Restore purchases surfaced in Profile/Settings UI
 - [ ] **Install attribution + funnel analytics** — wire store/TikTok acquisition source into PostHog so marketing can see which content drives install → couple-linked → trial → paid (required by `docs/MARKETING.md` M0). Today PostHog tracks in-app events but not acquisition source.
 
@@ -184,7 +198,7 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 
 1. **Weekly check-in resubmission fails — `src/api/check-ins.ts` `useSubmitCheckIn`**: uses `.upsert()` without `onConflict: 'couple_id,user_id,week_of'`, so the conflict target defaults to the PK (`id`, freshly generated) → second submit in the same week throws a unique-constraint violation on `UNIQUE(couple_id, user_id, week_of)` instead of updating. AND even with `onConflict` fixed, `check_ins` has no UPDATE RLS policy, so the update path is denied. Fix = code change + new migration adding the policy.
 2. **Devotional re-completion fails — `src/api/devotionals.ts` `useCompleteDevotional`**: same `.upsert()` problem; needs `onConflict: 'devotional_id,user_id'` to match `UNIQUE(devotional_id, user_id)`. (UPDATE policy exists for this table, so code-only fix.)
-3. **Password reset link is a dead end**: `authService.resetPassword` redirects to `bexhearts://reset-password`, but no `reset-password` route exists in `app/` and no code handles the recovery token from the URL.
+3. **Password reset link is a dead end**: `authService.resetPassword` redirects to `bexhearts://reset-password`, but no `reset-password` route exists in `app/` and no code handles the recovery token from the URL. **Resolution (decided 2026-06-17):** replace with a 6-digit email OTP **code** flow (Step B2) rather than fixing the deep link.
 4. **Streak is display-only**: dashboard shows `streak_count` but no code path ever increments or resets it (see Phase 1).
 
 ## 💡 Backlog / ideas (unprioritized — NOT in v1.0)
