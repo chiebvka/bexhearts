@@ -11,6 +11,13 @@
 > **👉 Current position (2026-06-17):** A1 ✓ committed (`main`). A2 in progress — local Supabase booted; still confirm schema applied in Studio + `.env` anon key + regen types. A3 in progress — `npm start` runs; iOS-sim Expo Go download hit a transient socket error (retry `i`, disable VPN, or use a physical device). **Now beginning Stage B (auth) on branch `authflow`.** Build + unit tests can proceed in parallel; on-device manual verification waits on A3 being green. A1·M2 (CI) still pending.
 >
 > Stage map: **A** foundation · **B** auth · **C** onboarding/linking · **D** core-loop hardening · **E** engagement layer · **F** monetization · **G** notifications · **H** quality/polish · **I** production backend · **J** release. (Maps to PROGRESS Phases 0→10.)
+>
+> ## 🚧 OPEN INFRA DEBT — must convert to a Development Build by Step B3
+> We are **temporarily on Expo Go** (Path A): aligned `react-native-worklets`→`0.5.1` + patch versions via `expo install --fix` so JS matches Expo Go's native modules, fixing the `Exception in HostFunction` crash. **This is a bridge, not the destination.** Expo Go CANNOT run this app's required native modules — `react-native-mmkv` v3 ("last used"), `react-native-purchases` (RevenueCat), `@superwall/react-native-superwall`, native Apple/Google auth, push. **By Step B3 (social sign-in) we MUST move to a Development Build (Path B):**
+> 1. `brew install cocoapods` (not yet installed).
+> 2. Dedupe the duplicate `react-native-purchases` (8.12.0 top-level vs 7.28.1 bundled in Superwall) via a package.json `overrides` — verify it doesn't break Superwall's purchase controller.
+> 3. `npx expo prebuild --clean` + `npx expo run:ios` (and `run:android`).
+> Once on a dev build, restore MMKV for "last used" (B1·M5) instead of the Expo-Go-friendly `expo-secure-store` fallback, and re-pin reanimated/worklets to latest if desired (the dev build compiles exact declared versions, so the Expo Go version-match constraint disappears).
 
 ---
 
@@ -41,8 +48,9 @@
 **Depends on:** A2.
 **Modules:**
 - M1 — `npm start` in its own terminal (Metro is long-running; keep it open). In the dev menu press **`i`** (iOS sim), **`a`** (Android emulator), or scan the **QR** with a physical phone (`w` = web). If the iOS-sim Expo Go download errors (`UND_ERR_SOCKET`), just retry `i`; if it persists, disable any VPN/proxy or use a physical device.
-- M2 — Run `npx expo install --fix` to clear the "packages should be updated" warnings (uses Expo's SDK-matched versions, not `npm update`); re-run tests; commit as a small chore.
+- M2 — Run `npx expo install --fix` to clear the "packages should be updated" warnings (uses Expo's SDK-matched versions, not `npm update`); re-run tests; commit as a small chore. **(Done 2026-06-18.)**
 - M3 — Fix any env/build breakage so the sign-in screen renders.
+> **Resolved 2026-06-18 — the `Exception in HostFunction` startup crash:** Reanimated 4's Babel plugin is `react-native-worklets/plugin` (was wrongly `react-native-reanimated/plugin` in `babel.config.js`), AND the installed JS `react-native-worklets` (0.8.1) was newer than Expo Go's native (0.5.1) → JSI mismatch. Fix: corrected the Babel plugin + `expo install --fix` pinned worklets→0.5.1 (compatible with reanimated 4.1.7's `0.5 - 0.8` range) + added `.npmrc` `legacy-peer-deps=true` (kills the web-only `react-dom` ERESOLVE). **After any Babel/version change you MUST restart with `npx expo start -c`** (clear cache) or the old bundle keeps crashing. Secondary noise: `posthog-react-native` calls the now-removed `expo-file-system` legacy `writeAsStringAsync` — non-fatal in dev (analytics disabled), clean up later.
 **Physical-device note:** a phone can't reach `127.0.0.1` — to use auth/data on a real device, set `EXPO_PUBLIC_SUPABASE_URL` to the Mac's LAN IP and restart with `npx expo start -c`. (For UI eyeballing only, not needed.) Push/RevenueCat/Superwall/native social-auth don't work in Expo Go — those need a dev build (Step J1).
 **Verify:** sign-in screen renders (sim and/or physical device).
 **Done when:** clean boot; no console errors on the auth route; version warnings cleared.
