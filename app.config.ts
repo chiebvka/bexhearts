@@ -39,7 +39,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-notifications',
       {
         icon: './assets/icon.png',
-        color: '#3D4A8A',
+        color: '#9849FA',
       },
     ],
     'expo-apple-authentication',

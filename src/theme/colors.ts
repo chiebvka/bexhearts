@@ -1,15 +1,18 @@
+// Brand colors sourced from bexoni.com (locked 2026-06-18). Primary = purple #9849FA.
+// This file is LIGHT-ONLY for now; the dark-mode token split (black #13161A bg, etc.)
+// is specified in detail in docs/PROGRESS.md Phase 8.
 export const colors = {
   primary: {
-    50: '#F0F1F8',
-    100: '#D9DCF0',
-    200: '#B3B9E0',
-    300: '#8D96D1',
-    400: '#6773C1',
-    500: '#3D4A8A',
-    600: '#313B6E',
-    700: '#252C53',
-    800: '#181D37',
-    900: '#0C0F1C',
+    50: '#F6F3FE',
+    100: '#EEE7FF',
+    200: '#DCCCFF',
+    300: '#CAADFF',
+    400: '#B07EFF',
+    500: '#9849FA', // bexoni brand purple
+    600: '#7F34D7',
+    700: '#6224A9',
+    800: '#451978',
+    900: '#29104A',
   },
 
   secondary: {
@@ -56,8 +59,8 @@ export const colors = {
   error: '#C05252',
   info: '#5A7A9A',
 
-  background: '#FAFAF8',
-  surface: '#FFFFFF',
+  background: '#F8F4EC',
+  surface: '#FEFCF7',
   surfaceElevated: '#FFFFFF',
   overlay: 'rgba(26, 26, 23, 0.5)',
 
@@ -66,6 +69,6 @@ export const colors = {
     secondary: '#5C5C54',
     tertiary: '#A8A89E',
     inverse: '#FAFAF8',
-    link: '#3D4A8A',
+    link: '#9849FA',
   },
 } as const;

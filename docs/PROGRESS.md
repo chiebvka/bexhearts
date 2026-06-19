@@ -171,7 +171,11 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 - [x] Design tokens (`src/theme/`), shared primitives (Button, Card, Input, Avatar, Badge, EmptyState, ErrorBoundary…)
 - [ ] Decision: stick with the hand-rolled component kit vs adopt a UI library — **recommendation: stick with what exists**, it's consistent and complete enough; revisit only if a specific need appears
 - [ ] Loading skeletons, pull-to-refresh, haptics pass, animations (reanimated is installed, unused)
-- [ ] Dark mode (theme tokens are light-only; `userInterfaceStyle: 'light'` currently forced)
+- [ ] **Dark mode + brand color scheme** — the theme is currently **LIGHT-ONLY**: `src/theme/colors.ts` has no light/dark split, and `app.config.ts` forces `userInterfaceStyle: 'light'`. Brand palette **locked 2026-06-18, sourced from bexoni.com** (oklch → hex):
+>   - **Primary purple `#9849FA`** — already applied to `colors.primary` (violet scale anchored at `500`), `text.link`, and the notification color in `app.config.ts`. Stays the same in both modes.
+>   - **Light mode:** bg cream `#F8F4EC` (applied), surface/card `#FEFCF7` (applied), elevated `#FFFFFF`, text near-black `#141517`, border `#DAD7D0`.
+>   - **Dark mode (to build):** bg black `#13161A`, card `#171B20`, accent surface `#1F2329`, text near-white `#FAFAFA`, muted text `#8B9098`, border `#2A2E35`.
+>   - **Agent TODO when implementing:** (1) restructure `colors.ts` into shared scales (`primary`/`secondary`/`accent`/`neutral`) + separate `light`/`dark` token sets for `background`/`surface`/`text`/`border`/`overlay`; (2) add a theme resolver (extend `src/stores/ui.store.ts`) honoring system scheme + a persisted manual override (`expo-secure-store`/AsyncStorage in Expo Go, MMKV after the dev build); (3) expose a `useTheme()` hook and replace direct `colors.background`/`colors.text.*` reads in components/primitives with active-theme tokens; (4) remove the forced `userInterfaceStyle: 'light'` and drive the root `StatusBar` style dynamically; (5) verify every screen + all shared primitives (Button/Card/Input/Avatar/Badge/EmptyState/ErrorBoundary) in both modes.
 - [ ] Accessibility pass (labels, touch targets, dynamic type)
 - [ ] Real app icon + splash (current assets are defaults)
 
