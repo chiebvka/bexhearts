@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1.5,
     borderColor: colors.neutral[300],
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.none,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md - 4,
     fontSize: 16,
