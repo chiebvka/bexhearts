@@ -100,7 +100,7 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 - [~] **Social sign-in (Apple + Google)** — `authService.signInWithApple()` + config plugin exist; Google not yet added; no UI buttons wired; both untestable until a dev build (Step J1). Apple required by the App Store whenever Google is offered.
 - [ ] **"Last used" sign-in hint** — persist the last-used method locally (MMKV); show a "Last used" tag on that button when returning signed-out.
 - [ ] **Password reset via 6-digit OTP code** (DECISION 2026-06-17) — configure the Supabase recovery email template to send `{{ .Token }}`; verify in-app with `verifyOtp({ type: 'recovery' })` → `updateUser({ password })`. Deep-link approach dropped; **this resolves Bug #3**. The forgot-password screen switches from "sends link" to "sends code".
-- [ ] Secure session storage — swap plain AsyncStorage for the encrypted LargeSecureStore pattern (aes-js + expo-secure-store) per Supabase docs. Pre-launch requirement, not a dev blocker
+- [x] Secure session storage — **done 2026-06-18 (B1·M1):** `LargeSecureStore` (AES-256 key in SecureStore, ciphertext in AsyncStorage) wired into the Supabase client at `src/services/supabase/secureStorage.ts`. Uses `expo-crypto` for the random key (Expo-Go-safe) instead of `react-native-get-random-values`. Tested in `__tests__/services/largeSecureStore.test.ts`. Note: switching the storage backend logs out any pre-existing dev session once.
 - [ ] Account deletion (App Store REQUIRES this for apps with accounts)
 
 ## Phase 3 — Onboarding & partner linking (the make-or-break flow)
@@ -151,6 +151,7 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 - [ ] **Paywall model = free trial → hard paywall (NO freemium)** (DECISION 2026-06-17): Superwall paywall fires in onboarding after the plan-summary, before partner-link, offering a 7-day free trial; trial unlocks everything; post-trial without subscribing = locked. Solo users hit ONE wall (this paywall), never a second partner-wall.
 - [ ] Restore purchases surfaced in Profile/Settings UI
 - [ ] **Install attribution + funnel analytics** — wire store/TikTok acquisition source into PostHog so marketing can see which content drives install → couple-linked → trial → paid (required by `docs/MARKETING.md` M0). Today PostHog tracks in-app events but not acquisition source.
+- [ ] **PostHog ↔ expo-file-system incompatibility (must fix BEFORE enabling analytics)** — `posthog-react-native@3.16.1` eagerly calls expo-file-system's legacy `writeAsStringAsync`, **removed in SDK 54**, throwing at startup. Currently dodged by NOT constructing PostHog in dev/unconfigured (`src/services/analytics/client.ts`). When real keys are added (prod), this WILL crash unless we first upgrade `posthog-react-native` to an SDK-54-compatible version (or pass it custom AsyncStorage-backed storage).
 
 ## Phase 6 — Notifications & engagement
 - [x] Push token registration + permission flow + token saved to profile (`src/services/notifications/`)

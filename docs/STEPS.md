@@ -8,7 +8,7 @@
 > - A step is **Done when** `npm run typecheck && npm run lint && npm test` is green **and** its manual check passes.
 > - **Migrations:** when a step needs schema, you only *write* `supabase/migrations/0000X_*.sql`. The owner applies it in Supabase Studio (local now, VPS later). Never run it yourself. After it's applied, regenerate types: `supabase gen types typescript --local > src/types/database.ts`.
 >
-> **👉 Current position (2026-06-17):** A1 ✓ committed (`main`). A2 in progress — local Supabase booted; still confirm schema applied in Studio + `.env` anon key + regen types. A3 in progress — `npm start` runs; iOS-sim Expo Go download hit a transient socket error (retry `i`, disable VPN, or use a physical device). **Now beginning Stage B (auth) on branch `authflow`.** Build + unit tests can proceed in parallel; on-device manual verification waits on A3 being green. A1·M2 (CI) still pending.
+> **👉 Current position (2026-06-18):** Stage A effectively done — **app boots to the sign-in screen in Expo Go** (after the worklets fix + `expo install --fix`; brand purple/cream + square corners applied). **Stage B in progress on `authflow`:** **B1·M1 (encrypted `LargeSecureStore`) ✓ done + tested.** Next: **B1·M2 (email sign-up)**. Still on Expo Go (Path A) — dev build due by B3 (see infra-debt block). Open: A1·M2 (CI), A2 (confirm schema in Studio + regen types).
 >
 > Stage map: **A** foundation · **B** auth · **C** onboarding/linking · **D** core-loop hardening · **E** engagement layer · **F** monetization · **G** notifications · **H** quality/polish · **I** production backend · **J** release. (Maps to PROGRESS Phases 0→10.)
 >
