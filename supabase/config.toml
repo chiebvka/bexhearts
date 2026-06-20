@@ -202,7 +202,9 @@ enable_signup = true
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
-enable_confirmations = false
+# ON: signup sends a 6-digit OTP code, verified in-app at app/(auth)/verify-email.tsx.
+# Locally, the email is caught by Mailpit at http://127.0.0.1:55324.
+enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
@@ -221,6 +223,13 @@ otp_expiry = 3600
 # pass = "env(SENDGRID_API_KEY)"
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
+
+# Signup confirmation — sends a 6-digit OTP code ({{ .Token }}), verified in-app
+# at app/(auth)/verify-email.tsx (see docs/STEPS.md B1-M2). Recovery/reset template
+# is added in B2.
+[auth.email.template.confirmation]
+subject = "Your Bexhearts confirmation code"
+content_path = "./supabase/templates/confirm-signup.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
