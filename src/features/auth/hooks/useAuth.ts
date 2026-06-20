@@ -33,17 +33,58 @@ export function useAuth() {
     setError(null);
 
     try {
-      const { error: authError } = await authService.signUpWithEmail(
-        data.email,
-        data.password
-      );
+      const { data: result, error: authError } =
+        await authService.signUpWithEmail(data.email, data.password);
       if (authError) throw authError;
       track(ANALYTICS_EVENTS.SIGN_UP, { method: 'email' });
-      router.replace('/');
+
+      if (result.session) {
+        // Email confirmation disabled (e.g. local dev) → signed in immediately.
+        router.replace('/');
+      } else {
+        // Confirmation required → verify the emailed 6-digit code next.
+        router.push({
+          pathname: '/(auth)/verify-email',
+          params: { email: data.email },
+        });
+      }
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const verifyEmailOtp = async (email: string, token: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { error: verifyError } = await authService.verifySignupOtp(
+        email,
+        token
+      );
+      if (verifyError) throw verifyError;
+      // Session is now set; the AuthProvider listener routes us into the app.
+      router.replace('/');
+      return true;
+    } catch (err) {
+      setError(getErrorMessage(err));
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resendEmailOtp = async (email: string) => {
+    setError(null);
+    try {
+      const { error: resendError } = await authService.resendSignupOtp(email);
+      if (resendError) throw resendError;
+      return true;
+    } catch (err) {
+      setError(getErrorMessage(err));
+      return false;
     }
   };
 
@@ -69,5 +110,15 @@ export function useAuth() {
     }
   };
 
-  return { signIn, signUp, signOut, resetPassword, isLoading, error, clearError: () => setError(null) };
+  return {
+    signIn,
+    signUp,
+    verifyEmailOtp,
+    resendEmailOtp,
+    signOut,
+    resetPassword,
+    isLoading,
+    error,
+    clearError: () => setError(null),
+  };
 }

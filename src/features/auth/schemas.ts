@@ -26,3 +26,13 @@ export const forgotPasswordSchema = z.object({
 });
 
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+// 6-digit email confirmation / recovery code
+export const otpSchema = z.object({
+  token: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, 'Enter the 6-digit code from your email'),
+});
+
+export type OtpFormData = z.infer<typeof otpSchema>;

@@ -94,6 +94,7 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 
 ## Phase 2 — Auth & session
 - [x] Email/password sign-up, sign-in, sign-out (`src/features/auth/`, `authService`)
+- [x] **Email confirmation via 6-digit OTP** (B1·M2 app-side, 2026-06-18): `signUp` branches on session (present → app; absent → `app/(auth)/verify-email.tsx` → `verifySignupOtp`). Added `authService.verifySignupOtp/resendSignupOtp`, `otpSchema`, `VerifyEmailForm`; tested in `__tests__/auth/`. **Pending Supabase side:** `enable_confirmations = true` + a token-based confirmation email template (so the email carries `{{ .Token }}` not a link). Email infra decided: auth → Supabase Custom SMTP → ZeptoMail (US `smtp.zeptomail.com`, sender `noreply@auth.bexhearts.com`); local → Mailpit; transactional → Phase 6 edge functions (no app package, no app-side mail keys).
 - [x] Session persistence + auth state listener + store hydration (`AuthProvider`)
 - [x] Route gating in `app/index.tsx`: unauthenticated → sign-in; no profile → onboarding; no couple → partner-invite; else → tabs
 - [x] Forgot-password screen sends reset email
