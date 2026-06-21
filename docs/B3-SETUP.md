@@ -56,6 +56,13 @@ Native flow via `@react-native-google-signin/google-signin` → `signInWithIdTok
 
 ---
 
+## FAQ / clarifications
+- **`com.bexhearts.app` is a bundle ID, NOT a domain** — don't buy anything; it's just a unique reverse-DNS-style name (you already own bexhearts.com).
+- **RevenueCat & Superwall accounts are NOT needed for the dev build or B3** — both SDKs no-op gracefully without keys. Create them (free tiers) in **Stage F (monetization)**.
+- **Codemagic / EAS not needed now** — `npx expo run:ios` builds **locally** on the Mac (Xcode) to the simulator. Pick a cloud builder (default **EAS**) only at release (Stage J).
+- **Apple $99/yr** has no individual/student discount (waivers only for nonprofit/edu/gov). The **15%** rate = App Store **Small Business Program** (<$1M/yr), enrolled later. **Google Play** = one-time **$25**, 15% on first $1M.
+- You can build/run on the **simulator with a free Apple ID**; the paid program is needed to enable "Sign in with Apple" for submission + TestFlight/ship.
+
 ## Notes for the wiring agent (new chat)
 - B3 modules (STEPS.md): M1 Apple button → `authService.signInWithApple`; M2 Google (`@react-native-google-signin` + provider config + handler); M3 always show Apple when Google is shown (App Store rule); record `setLastUsedMethod('apple'|'google')` on success (B1·M5 infra is ready); the SignInForm "last used" hint becomes per-method.
 - After B3: **B4 (account deletion)** — needs `delete_my_account()` migration + Settings UI (re-auth via `authService.reauthenticate`, already stubbed). Then **Stage C** (onboarding/partner-linking).
