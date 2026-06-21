@@ -14,9 +14,9 @@ A subscription **mobile app (Expo/React Native + Supabase)** for **Christian cou
 
 ## 3. Where we are NOW (update this as we go)
 - **Branch:** `authflow` (off `dev` off `main`). Many commits; push when asked.
-- **Stage B (Auth) in progress.** Done: **B1·M1** encrypted `LargeSecureStore`; **B1·M2** email sign-up + **6-digit OTP confirmation** (app + Supabase template `confirm-signup.html`, `enable_confirmations = true`); **B1·M3** sign-in hardening (unconfirmed → resend+verify) + **password show/hide eye** on `Input` + **`BackButton`** on verify-email/profile-setup; **B1·M4** persistent session (foreground `AppState` auto-refresh + `authService.reauthenticate` stub).
-- **Verified working in the iOS simulator:** sign-up → OTP email in Mailpit → verify → onboarding.
-- **NEXT: B1·M5 ("last used" sign-in hint — use `expo-secure-store`, NOT MMKV)** → M6 (route-gating verification). Then Stage C (onboarding/partner-linking).
+- **Stage B (Auth):** **B1 (auth foundation) is COMPLETE** — M1 encrypted `LargeSecureStore`; M2 email sign-up + 6-digit OTP confirmation (app + `confirm-signup.html`, `enable_confirmations = true`); M3 sign-in hardening + password eye toggle + `BackButton`; M4 persistent session (AppState auto-refresh + `reauthenticate` stub); M5 "last used" hint (AsyncStorage) + `SignOutLink` on onboarding; M6 route gating verified.
+- **Verified in the iOS simulator:** sign-up → OTP email in Mailpit → verify → onboarding. Sign-out lives on the Profile tab (+ a link on onboarding).
+- **NEXT: B2 — password reset via OTP** (reuse the OTP pattern; add a recovery email template adapted from `confirm-signup.html`). Then B3 (social sign-in, needs dev build), B4 (account deletion), then **Stage C (onboarding/partner-linking)**.
 
 ## 4. Critical environment facts (don't relearn the hard way)
 - **Running on Expo Go (Path A).** `react-native-worklets` is pinned to **0.5.1** to match Expo Go's native module (do not bump). **🚧 We MUST switch to a Development Build by Step B3** (see the infra-debt block in STEPS.md) — Expo Go CANNOT run `react-native-mmkv` v3, RevenueCat, Superwall, or native Apple/Google auth.

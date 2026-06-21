@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,14 +8,20 @@ import { Button, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { useAuth } from '../hooks/useAuth';
+import { getLastUsedMethod, type AuthMethod } from '../lastUsedMethod';
 import { signInSchema, type SignInFormData } from '../schemas';
 
 export function SignInForm() {
   const { signIn, isLoading, error } = useAuth();
+  const [lastUsed, setLastUsed] = useState<AuthMethod | null>(null);
   const { control, handleSubmit } = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
   });
+
+  useEffect(() => {
+    getLastUsedMethod().then(setLastUsed);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -47,6 +54,16 @@ export function SignInForm() {
         </Text>
       )}
 
+      {lastUsed === 'email' && (
+        <Text
+          variant="bodySmall"
+          color={colors.text.tertiary}
+          style={styles.lastUsed}
+        >
+          You last signed in with email
+        </Text>
+      )}
+
       <Button
         title="Sign In"
         onPress={handleSubmit(signIn)}
@@ -73,6 +90,10 @@ const styles = StyleSheet.create({
   },
   error: {
     marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  lastUsed: {
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   button: {

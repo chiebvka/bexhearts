@@ -2,6 +2,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { BackButton } from '@/components/ui';
 import { ProfileSetupForm } from '@/features/onboarding';
+import { SignOutLink } from '@/features/auth';
 import { spacing } from '@/theme/spacing';
 
 export default function ProfileSetupScreen() {
@@ -11,6 +12,7 @@ export default function ProfileSetupScreen() {
     <ScreenContainer style={{ paddingTop: insets.top + spacing.md }}>
       <BackButton />
       <ProfileSetupForm />
+      <SignOutLink />
     </ScreenContainer>
   );
 }

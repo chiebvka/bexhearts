@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { authService } from '@/services/supabase/auth';
 import { track, ANALYTICS_EVENTS } from '@/services/analytics/events';
 import { getErrorMessage } from '@/utils/error';
+import { setLastUsedMethod } from '../lastUsedMethod';
 import type { SignInFormData, SignUpFormData } from '../schemas';
 
 // Supabase returns this when a user signs in before confirming their email.
@@ -38,6 +39,7 @@ export function useAuth() {
         throw authError;
       }
       track(ANALYTICS_EVENTS.SIGN_IN, { method: 'email' });
+      void setLastUsedMethod('email');
       router.replace('/');
     } catch (err) {
       setError(getErrorMessage(err));
@@ -58,6 +60,7 @@ export function useAuth() {
 
       if (result.session) {
         // Email confirmation disabled (e.g. local dev) → signed in immediately.
+        void setLastUsedMethod('email');
         router.replace('/');
       } else {
         // Confirmation required → verify the emailed 6-digit code next.
@@ -83,6 +86,7 @@ export function useAuth() {
         token
       );
       if (verifyError) throw verifyError;
+      void setLastUsedMethod('email');
       // Session is now set; the AuthProvider listener routes us into the app.
       router.replace('/');
       return true;

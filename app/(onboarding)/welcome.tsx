@@ -2,6 +2,7 @@ import { View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, Button } from '@/components/ui';
+import { SignOutLink } from '@/features/auth';
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
@@ -25,6 +26,7 @@ export default function WelcomeScreen() {
           onPress={() => router.push('/(onboarding)/profile-setup')}
           fullWidth
         />
+        <SignOutLink />
       </View>
     </View>
   );
