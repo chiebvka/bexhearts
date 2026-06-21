@@ -1,4 +1,8 @@
-import { otpSchema, signUpSchema } from '@/features/auth/schemas';
+import {
+  otpSchema,
+  signUpSchema,
+  resetPasswordSchema,
+} from '@/features/auth/schemas';
 
 describe('otpSchema', () => {
   it('accepts a 6-digit code', () => {
@@ -37,6 +41,38 @@ describe('signUpSchema', () => {
         email: 'a@b.com',
         password: 'password',
         confirmPassword: 'password',
+      }).success
+    ).toBe(false);
+  });
+});
+
+describe('resetPasswordSchema', () => {
+  it('accepts a 6-digit code + matching strong password', () => {
+    expect(
+      resetPasswordSchema.safeParse({
+        token: '123456',
+        password: 'NewPass1',
+        confirmPassword: 'NewPass1',
+      }).success
+    ).toBe(true);
+  });
+
+  it('rejects a non-6-digit code', () => {
+    expect(
+      resetPasswordSchema.safeParse({
+        token: '123',
+        password: 'NewPass1',
+        confirmPassword: 'NewPass1',
+      }).success
+    ).toBe(false);
+  });
+
+  it('rejects mismatched passwords', () => {
+    expect(
+      resetPasswordSchema.safeParse({
+        token: '123456',
+        password: 'NewPass1',
+        confirmPassword: 'NewPass2',
       }).success
     ).toBe(false);
   });

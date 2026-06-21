@@ -231,6 +231,12 @@ otp_expiry = 3600
 subject = "Your Bexhearts confirmation code"
 content_path = "./supabase/templates/confirm-signup.html"
 
+# Password reset — sends a 6-digit OTP code ({{ .Token }}), verified in-app at
+# app/(auth)/reset-password.tsx (B2). Replaces the old deep-link (Bug #3).
+[auth.email.template.recovery]
+subject = "Your Bexhearts password reset code"
+content_path = "./supabase/templates/reset-password.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

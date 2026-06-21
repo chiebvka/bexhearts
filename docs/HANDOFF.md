@@ -16,7 +16,8 @@ A subscription **mobile app (Expo/React Native + Supabase)** for **Christian cou
 - **Branch:** `authflow` (off `dev` off `main`). Many commits; push when asked.
 - **Stage B (Auth):** **B1 (auth foundation) is COMPLETE** — M1 encrypted `LargeSecureStore`; M2 email sign-up + 6-digit OTP confirmation (app + `confirm-signup.html`, `enable_confirmations = true`); M3 sign-in hardening + password eye toggle + `BackButton`; M4 persistent session (AppState auto-refresh + `reauthenticate` stub); M5 "last used" hint (AsyncStorage) + `SignOutLink` on onboarding; M6 route gating verified.
 - **Verified in the iOS simulator:** sign-up → OTP email in Mailpit → verify → onboarding. Sign-out lives on the Profile tab (+ a link on onboarding).
-- **NEXT: B2 — password reset via OTP** (reuse the OTP pattern; add a recovery email template adapted from `confirm-signup.html`). Then B3 (social sign-in, needs dev build), B4 (account deletion), then **Stage C (onboarding/partner-linking)**.
+- **B2 (password reset via OTP) ✓** — enumeration-safe forgot-password → code screen → set new password; recovery template `reset-password.html` + config; **Bug #3 resolved**. (Restart Supabase to load the recovery template.)
+- **NEXT: B3 (social sign-in — Apple + Google).** Wire it now, but **native verification needs the dev build** (Path B, due this stage). Then B4 (account deletion), then **Stage C (onboarding/partner-linking)** — the make-or-break flow.
 
 ## 4. Critical environment facts (don't relearn the hard way)
 - **Running on Expo Go (Path A).** `react-native-worklets` is pinned to **0.5.1** to match Expo Go's native module (do not bump). **🚧 We MUST switch to a Development Build by Step B3** (see the infra-debt block in STEPS.md) — Expo Go CANNOT run `react-native-mmkv` v3, RevenueCat, Superwall, or native Apple/Google auth.

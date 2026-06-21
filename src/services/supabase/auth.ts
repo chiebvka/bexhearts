@@ -42,10 +42,21 @@ export const authService = {
     return supabase.auth.getSession();
   },
 
+  // Sends a password-recovery email. With the recovery template using
+  // {{ .Token }} this delivers a 6-digit code (no deep link). Returns success
+  // regardless of whether the account exists (enumeration-safe).
   resetPassword(email: string) {
-    return supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'bexhearts://reset-password',
-    });
+    return supabase.auth.resetPasswordForEmail(email);
+  },
+
+  // Verify the recovery code → establishes a short-lived recovery session.
+  verifyRecoveryOtp(email: string, token: string) {
+    return supabase.auth.verifyOtp({ email, token, type: 'recovery' });
+  },
+
+  // Set the new password (called while the recovery session is active).
+  updatePassword(password: string) {
+    return supabase.auth.updateUser({ password });
   },
 
   onAuthStateChange(callback: Parameters<typeof supabase.auth.onAuthStateChange>[0]) {

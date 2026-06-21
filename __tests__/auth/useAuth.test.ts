@@ -12,6 +12,8 @@ jest.mock('@/services/supabase/auth', () => ({
     resetPassword: jest.fn(),
     verifySignupOtp: jest.fn(),
     resendSignupOtp: jest.fn(),
+    verifyRecoveryOtp: jest.fn(),
+    updatePassword: jest.fn(),
   },
 }));
 
@@ -26,6 +28,9 @@ const mockAuth = authService as unknown as {
   signInWithEmail: MockFn;
   resendSignupOtp: MockFn;
   signOut: MockFn;
+  resetPassword: MockFn;
+  verifyRecoveryOtp: MockFn;
+  updatePassword: MockFn;
 };
 
 const validSignup = {
@@ -154,5 +159,63 @@ describe('useAuth.signOut', () => {
 
     expect(mockAuth.signOut).toHaveBeenCalled();
     expect(mockRouter.replace).toHaveBeenCalledWith('/(auth)/sign-in');
+  });
+});
+
+describe('useAuth password reset', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('navigates to reset-password regardless of whether the account exists (enumeration-safe)', async () => {
+    mockAuth.resetPassword.mockResolvedValue({ error: null });
+
+    const { result } = renderHook(() => useAuth());
+    await act(async () => {
+      await result.current.requestPasswordReset('a@b.com');
+    });
+
+    expect(mockRouter.push).toHaveBeenCalledWith({
+      pathname: '/(auth)/reset-password',
+      params: { email: 'a@b.com' },
+    });
+  });
+
+  it('completePasswordReset verifies the code, sets the password, and routes in', async () => {
+    mockAuth.verifyRecoveryOtp.mockResolvedValue({ error: null });
+    mockAuth.updatePassword.mockResolvedValue({ error: null });
+
+    const { result } = renderHook(() => useAuth());
+    let ok = false;
+    await act(async () => {
+      ok = await result.current.completePasswordReset(
+        'a@b.com',
+        '123456',
+        'NewPass1'
+      );
+    });
+
+    expect(mockAuth.verifyRecoveryOtp).toHaveBeenCalledWith('a@b.com', '123456');
+    expect(mockAuth.updatePassword).toHaveBeenCalledWith('NewPass1');
+    expect(mockRouter.replace).toHaveBeenCalledWith('/');
+    expect(ok).toBe(true);
+  });
+
+  it('does not update the password when the code is wrong/expired', async () => {
+    mockAuth.verifyRecoveryOtp.mockResolvedValue({
+      error: new Error('Token has expired or is invalid'),
+    });
+
+    const { result } = renderHook(() => useAuth());
+    let ok = true;
+    await act(async () => {
+      ok = await result.current.completePasswordReset(
+        'a@b.com',
+        '000000',
+        'NewPass1'
+      );
+    });
+
+    expect(mockAuth.updatePassword).not.toHaveBeenCalled();
+    expect(result.current.error).toBeTruthy();
+    expect(ok).toBe(false);
   });
 });

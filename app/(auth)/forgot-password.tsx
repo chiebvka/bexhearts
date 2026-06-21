@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,43 +13,22 @@ import { spacing } from '@/theme/spacing';
 
 export default function ForgotPasswordScreen() {
   const insets = useSafeAreaInsets();
-  const { resetPassword, isLoading, error } = useAuth();
-  const [sent, setSent] = useState(false);
+  const { requestPasswordReset, isLoading, error } = useAuth();
 
   const { control, handleSubmit } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
   });
 
-  const onSubmit = async (data: ForgotPasswordFormData) => {
-    const success = await resetPassword(data.email);
-    if (success) setSent(true);
-  };
-
-  if (sent) {
-    return (
-      <View style={[styles.container, { paddingTop: insets.top + spacing['2xl'] }]}>
-        <Text variant="displayMedium">Check your email</Text>
-        <Text variant="bodyLarge" color={colors.text.secondary} style={styles.subtitle}>
-          We sent you a password reset link. Check your inbox and follow the instructions.
-        </Text>
-        <Button
-          title="Back to Sign In"
-          onPress={() => router.back()}
-          variant="outline"
-          fullWidth
-          style={styles.button}
-        />
-      </View>
-    );
-  }
+  const onSubmit = (data: ForgotPasswordFormData) =>
+    requestPasswordReset(data.email);
 
   return (
     <KeyboardAvoid>
       <View style={[styles.container, { paddingTop: insets.top + spacing['2xl'] }]}>
         <Text variant="displayMedium">Reset password</Text>
         <Text variant="bodyLarge" color={colors.text.secondary} style={styles.subtitle}>
-          {"Enter your email and we'll send you a reset link."}
+          {"Enter your email and we'll send you a 6-digit code to reset your password."}
         </Text>
 
         <FormInput
@@ -60,6 +38,8 @@ export default function ForgotPasswordScreen() {
           placeholder="your@email.com"
           autoCapitalize="none"
           keyboardType="email-address"
+          textContentType="emailAddress"
+          autoComplete="email"
           containerStyle={styles.field}
         />
 
@@ -70,7 +50,7 @@ export default function ForgotPasswordScreen() {
         )}
 
         <Button
-          title="Send Reset Link"
+          title="Send code"
           onPress={handleSubmit(onSubmit)}
           loading={isLoading}
           fullWidth

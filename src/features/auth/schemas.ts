@@ -36,3 +36,20 @@ export const otpSchema = z.object({
 });
 
 export type OtpFormData = z.infer<typeof otpSchema>;
+
+// Password reset: the emailed code + the new password
+export const resetPasswordSchema = z
+  .object({
+    token: z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/, 'Enter the 6-digit code from your email'),
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

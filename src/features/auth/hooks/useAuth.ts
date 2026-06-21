@@ -116,13 +116,45 @@ export function useAuth() {
     router.replace('/(auth)/sign-in');
   };
 
-  const resetPassword = async (email: string) => {
+  const requestPasswordReset = async (email: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const { error: resetError } = await authService.resetPassword(email);
       if (resetError) throw resetError;
+      // Enumeration-safe: navigate to the code screen regardless of whether the
+      // account exists (Supabase doesn't reveal it). The screen shows a generic
+      // "if an account exists…" message.
+      router.push({
+        pathname: '/(auth)/reset-password',
+        params: { email },
+      });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const completePasswordReset = async (
+    email: string,
+    token: string,
+    password: string
+  ) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { error: verifyError } = await authService.verifyRecoveryOtp(
+        email,
+        token
+      );
+      if (verifyError) throw verifyError;
+      const { error: updateError } = await authService.updatePassword(password);
+      if (updateError) throw updateError;
+      void setLastUsedMethod('email');
+      router.replace('/');
       return true;
     } catch (err) {
       setError(getErrorMessage(err));
@@ -132,13 +164,27 @@ export function useAuth() {
     }
   };
 
+  const resendPasswordReset = async (email: string) => {
+    setError(null);
+    try {
+      const { error: resetError } = await authService.resetPassword(email);
+      if (resetError) throw resetError;
+      return true;
+    } catch (err) {
+      setError(getErrorMessage(err));
+      return false;
+    }
+  };
+
   return {
     signIn,
     signUp,
     verifyEmailOtp,
     resendEmailOtp,
     signOut,
-    resetPassword,
+    requestPasswordReset,
+    completePasswordReset,
+    resendPasswordReset,
     isLoading,
     error,
     clearError: () => setError(null),
