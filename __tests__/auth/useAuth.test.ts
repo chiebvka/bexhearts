@@ -21,7 +21,12 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 
 type MockFn = ReturnType<typeof jest.fn>;
 const mockRouter = router as unknown as { replace: MockFn; push: MockFn };
-const mockAuth = authService as unknown as { signUpWithEmail: MockFn };
+const mockAuth = authService as unknown as {
+  signUpWithEmail: MockFn;
+  signInWithEmail: MockFn;
+  resendSignupOtp: MockFn;
+  signOut: MockFn;
+};
 
 const validSignup = {
   email: 'a@b.com',
@@ -79,5 +84,75 @@ describe('useAuth.signUp confirmation branch', () => {
     expect(result.current.error).toBeTruthy();
     expect(mockRouter.replace).not.toHaveBeenCalled();
     expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+});
+
+describe('useAuth.signIn', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('routes into the app on success', async () => {
+    mockAuth.signInWithEmail.mockResolvedValue({
+      data: { session: {} },
+      error: null,
+    });
+
+    const { result } = renderHook(() => useAuth());
+    await act(async () => {
+      await result.current.signIn({ email: 'a@b.com', password: 'Password1' });
+    });
+
+    expect(mockRouter.replace).toHaveBeenCalledWith('/');
+  });
+
+  it('resends a code and routes to verify-email when the email is unconfirmed', async () => {
+    mockAuth.signInWithEmail.mockResolvedValue({
+      data: { session: null },
+      error: { code: 'email_not_confirmed', message: 'Email not confirmed' },
+    });
+    mockAuth.resendSignupOtp.mockResolvedValue({ error: null });
+
+    const { result } = renderHook(() => useAuth());
+    await act(async () => {
+      await result.current.signIn({ email: 'a@b.com', password: 'Password1' });
+    });
+
+    expect(mockAuth.resendSignupOtp).toHaveBeenCalledWith('a@b.com');
+    expect(mockRouter.push).toHaveBeenCalledWith({
+      pathname: '/(auth)/verify-email',
+      params: { email: 'a@b.com' },
+    });
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('surfaces an error on invalid credentials', async () => {
+    mockAuth.signInWithEmail.mockResolvedValue({
+      data: { session: null },
+      error: new Error('Invalid login credentials'),
+    });
+
+    const { result } = renderHook(() => useAuth());
+    await act(async () => {
+      await result.current.signIn({ email: 'a@b.com', password: 'wrong' });
+    });
+
+    expect(result.current.error).toBeTruthy();
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+    expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+});
+
+describe('useAuth.signOut', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('signs out and returns to the sign-in screen', async () => {
+    mockAuth.signOut.mockResolvedValue({ error: null });
+
+    const { result } = renderHook(() => useAuth());
+    await act(async () => {
+      await result.current.signOut();
+    });
+
+    expect(mockAuth.signOut).toHaveBeenCalled();
+    expect(mockRouter.replace).toHaveBeenCalledWith('/(auth)/sign-in');
   });
 });
