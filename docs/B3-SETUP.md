@@ -22,7 +22,7 @@ Gets a dev client running on the iOS simulator. Prereqs: Xcode 26.5 ✓ already 
 ## Part 2 — Apple Sign In
 We use the **native** flow (`expo-apple-authentication` → `signInWithIdToken`), which keeps the credential setup minimal.
 
-1. **Enroll in the Apple Developer Program** ($99/yr) — https://developer.apple.com/programs/ — *(enrollment can take a while; start it early).* Note your **Team ID**.
+1. **Enroll in the Apple Developer Program** ($99/yr) — https://developer.apple.com/programs/ — *(start early).* **Use a NEW, dedicated business Apple ID created with a `bexoni.com` email — NOT your personal Apple ID** (it becomes the permanent Account Holder). Entity type: **Organization (Bexoni)** if it's a registered business (needs a free **D-U-N-S number**, ~few days) — preferred for the agency; otherwise **Individual** now and transfer the app to a Bexoni org account later. Note your **Team ID**. *(Local dev build + simulator testing need no paid account — start building regardless.)* Same dedicated-business-account principle applies to Google (Play Console + Cloud).
 2. **Identifiers → App IDs:** create/select App ID **`com.bexhearts.app`**, enable the **"Sign In with Apple"** capability.
 3. **Supabase config:** in your VPS Supabase, enable the **Apple** auth provider and set the **allowed client IDs** to include **`com.bexhearts.app`** (the native bundle ID = the token audience). For the *native id-token* flow this is sufficient — you do **not** need a Services ID or `.p8` key (those are only for the web redirect flow we're not using).
 4. App side is mostly ready: `expo-apple-authentication` plugin + bundle ID are already in `app.config.ts`; `authService.signInWithApple` exists. The agent adds the button + wiring.
