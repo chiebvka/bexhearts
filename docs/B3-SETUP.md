@@ -12,8 +12,8 @@ Gets a dev client running on the iOS simulator. Prereqs: Xcode 26.5 ✓ already 
 1. **Install CocoaPods:** `brew install cocoapods`
 2. **Dedupe RevenueCat** (Superwall bundles its own `react-native-purchases@7.x` vs our `8.x` — `expo-doctor` flagged it). The agent will add a `package.json` `overrides` to force one version **and verify Superwall's purchase controller still works** — flag for the new chat, don't hand-edit.
 3. **Prebuild:** `npx expo prebuild --clean` (generates `ios/` + `android/` — both are gitignored).
-4. **Build & run:** `npx expo run:ios` (first build ~10 min; installs the dev client on the simulator). After that, `npm start` connects to it like Expo Go but with all native modules.
-5. **Android dev build (optional now):** `npx expo run:android` (needs Android Studio + an AVD).
+4. **Build & run:** `npx expo run:ios` (or `npm run ios`) — first build ~10–20 min; installs + launches the dev build on the simulator and starts Metro.
+5. **Android dev build (optional now):** `npx expo run:android` (or `npm run android`) — same `bexhearts/` folder, but start an Android Studio emulator (AVD) first. iOS-first is fine; defer Android.
 
 ✅ **Once the dev build launches and reaches sign-in, the worklets/Expo-Go workarounds no longer constrain us** (the build compiles our exact native versions).
 
@@ -66,3 +66,27 @@ Native flow via `@react-native-google-signin/google-signin` → `signInWithIdTok
 ## Notes for the wiring agent (new chat)
 - B3 modules (STEPS.md): M1 Apple button → `authService.signInWithApple`; M2 Google (`@react-native-google-signin` + provider config + handler); M3 always show Apple when Google is shown (App Store rule); record `setLastUsedMethod('apple'|'google')` on success (B1·M5 infra is ready); the SignInForm "last used" hint becomes per-method.
 - After B3: **B4 (account deletion)** — needs `delete_my_account()` migration + Settings UI (re-auth via `authService.reauthenticate`, already stubbed). Then **Stage C** (onboarding/partner-linking).
+
+---
+
+## Part 5 — Dev build mental model (this changes your daily workflow)
+
+Think of the app as **two layers**:
+1. **Native shell = the "dev build"** — the compiled app containing all native code (MMKV, RevenueCat, Superwall, Apple/Google auth, reanimated…). Produced by `expo run:ios` / `run:android`. It's a custom version of "Expo Go" built *just for Bexhearts*, installed on the simulator.
+2. **Your JavaScript** (screens, hooks, logic, styles) — served live by **Metro** (`expo start`). The shell loads your JS from Metro with instant hot-reload.
+
+**The commands, and how they change:**
+- `npx expo run:ios` = build the native shell + install it + launch it + start Metro. **First build ~10–20 min**; later native rebuilds ~1–5 min.
+- `npx expo run:android` = same, for Android (start an emulator first). Same folder. iOS-first is fine.
+- **Day-to-day after the first build:** just run **`npx expo start`** and press **`i`** — but now `i` opens your **dev build**, not Expo Go. `-c` (clear cache) is still occasionally useful after config/babel changes. **So `expo start -c` + `i` are NOT redundant — they just target the dev build now.**
+
+**When do you re-run a build?** ONLY when the **native layer** changes:
+- add/remove/update a **native dependency** (e.g. adding Google sign-in in B3),
+- change **`app.config.ts`** native config (plugins, permissions, icon/splash),
+- edit anything in `ios/` or `android/`.
+
+**You do NOT rebuild for JS/TS changes** (screens, hooks, logic, styles) — those hot-reload instantly via Metro. **~95% of feature work needs no rebuild.**
+
+**What you preview in:** the dev build **replaces Expo Go** as your preview app. Everything we've built so far runs in it — now *with* the native modules Expo Go couldn't run.
+
+**TL;DR daily loop:** `npx expo start` → press `i` → edit JS → see it instantly. Re-run `run:ios`/`run:android` only when you touch native deps/config.
