@@ -8,6 +8,7 @@
 | **`docs/PROGRESS.md`** | **WHAT & WHY + status** — features, phases, positioning, decisions, known bugs. The source of truth. | Always, first |
 | **`docs/STEPS.md`** | **HOW & in what ORDER** — the modular build playbook; every step has a test checkpoint | You're implementing/building |
 | **`docs/MARKETING.md`** | **Go-to-market** — positioning, content playbook, reusable prompt templates, feature→content-angle map | You're creating marketing/content |
+| **`docs/HANDOFF.md`** | **Resume brief** — paste-to-bootstrap a fresh session; running notes + current position + env gotchas. Keep updated as work progresses. | Starting a new chat / context full |
 | **`README.md`** | Environment setup, commands, how to run & test the app | You're setting up or running the app |
 | **`AGENTS.md`** | Same rules as this file, for non-Claude agents (Codex, Antigravity, any LLM). Keep in sync with this file. | (other agents read this) |
 

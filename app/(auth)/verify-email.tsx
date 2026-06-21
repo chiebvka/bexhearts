@@ -1,7 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text } from '@/components/ui';
+import { Text, BackButton } from '@/components/ui';
 import { KeyboardAvoid } from '@/components/layout/KeyboardAvoid';
 import { VerifyEmailForm } from '@/features/auth';
 import { colors } from '@/theme/colors';
@@ -13,7 +13,8 @@ export default function VerifyEmailScreen() {
 
   return (
     <KeyboardAvoid>
-      <View style={[styles.container, { paddingTop: insets.top + spacing['2xl'] }]}>
+      <View style={[styles.container, { paddingTop: insets.top + spacing.lg }]}>
+        <BackButton />
         <View style={styles.header}>
           <Text variant="displayLarge">Check your email</Text>
           <Text variant="bodyLarge" color={colors.text.secondary} style={styles.subtitle}>
