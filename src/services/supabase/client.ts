@@ -1,3 +1,4 @@
+import { AppState } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database';
 import { LargeSecureStore } from './secureStorage';
@@ -19,4 +20,15 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: false,
   },
+});
+
+// Supabase recommends running the token auto-refresh timer only while the app
+// is in the foreground (React Native AppState). This keeps the persisted
+// session fresh without burning cycles in the background.
+AppState.addEventListener('change', (state) => {
+  if (state === 'active') {
+    supabase.auth.startAutoRefresh();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
 });

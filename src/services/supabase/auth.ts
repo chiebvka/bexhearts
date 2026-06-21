@@ -31,6 +31,13 @@ export const authService = {
     return supabase.auth.signOut();
   },
 
+  // Re-verify the current password before a sensitive action (account deletion,
+  // password change). Returns an error if the password is wrong. Wired into the
+  // re-auth gate; the calling UI lands with account deletion in B4.
+  reauthenticate(email: string, password: string) {
+    return supabase.auth.signInWithPassword({ email, password });
+  },
+
   getSession() {
     return supabase.auth.getSession();
   },
