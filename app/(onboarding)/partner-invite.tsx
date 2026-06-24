@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 export default function PartnerInviteScreen() {
   const insets = useSafeAreaInsets();
-  const { inviteCode, generateCode, isLoading } = useInviteCode();
+  const { inviteCode, generateCode, regenerateCode, isLoading } = useInviteCode();
   const [mode, setMode] = useState<'choose' | 'invite' | 'join'>('choose');
 
   if (mode === 'invite') {
@@ -21,7 +21,17 @@ export default function PartnerInviteScreen() {
         </Text>
 
         {inviteCode ? (
-          <InviteCodeCard code={inviteCode} />
+          <>
+            <InviteCodeCard code={inviteCode} />
+            <Button
+              title="Generate a new code"
+              onPress={regenerateCode}
+              loading={isLoading}
+              variant="ghost"
+              size="sm"
+              style={styles.switchButton}
+            />
+          </>
         ) : (
           <Button
             title="Generate Invite Code"

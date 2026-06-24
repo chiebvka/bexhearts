@@ -313,20 +313,42 @@ max_frequency = "5s"
 # Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
 # `twitter`, `x`, `slack`, `spotify`, `workos`, `zoom`.
+# B3 — Apple sign-in (native id-token flow via expo-apple-authentication).
+# Flip `enabled = true` once the Apple Developer account is approved AND the App
+# ID has "Sign In with Apple" enabled. For the NATIVE flow, client_id is just the
+# app bundle id (the token audience) — no Services ID or .p8 secret is required.
+# Restart Supabase (`supabase stop && supabase start`) after flipping.
 [auth.external.apple]
-enabled = false
-client_id = ""
+enabled = true
+client_id = "com.bexhearts.app"
 # DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
+# (Unused for the native id-token flow; only needed for the web redirect flow we are NOT using.)
 secret = "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)"
 # Overrides the default auth redirectUrl.
 redirect_uri = ""
 # Overrides the default auth provider URL. Used to support self-hosted gitlab, single-tenant Azure,
 # or any other third-party OIDC providers.
 url = ""
-# If enabled, the nonce check will be skipped. Required for local sign in with Google auth.
-skip_nonce_check = false
+# Native id-token sign-in doesn't send a nonce, so skip the check.
+skip_nonce_check = true
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
 email_optional = false
+
+# B3 — Google sign-in (native id-token flow via @react-native-google-signin).
+# client_id = the allowed token audiences: Web + iOS + Android client IDs (the
+# token's audience is the Web client ID, but all three are listed for safety).
+# Client IDs are PUBLIC (not secrets), so they live here. Only the Web client
+# SECRET is an env var: set SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET in the gitignored
+# project-root `.env` (the CLI auto-loads it on start) — NOT with an EXPO_PUBLIC_
+# prefix, so it never ships in the app bundle. Restart after changes:
+#   supabase stop && supabase start
+[auth.external.google]
+enabled = true
+client_id = "236343232119-1apef1lhio8f902v3glsiqf3o3l79koa.apps.googleusercontent.com,236343232119-7hav8ifqbs6un3uv3an2gjd8qrjuef2h.apps.googleusercontent.com,236343232119-eqi5mhb099t4pitvhh39g4795r8manl8.apps.googleusercontent.com"
+# DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+# Required for native (mobile) Google sign-in — the native flow doesn't use a nonce.
+skip_nonce_check = true
 
 # Allow Solana wallet holders to sign in to your project via the Sign in with Solana (SIWS, EIP-4361) standard.
 # You can configure "web3" rate limit in the [auth.rate_limit] section and set up [auth.captcha] if self-hosting.

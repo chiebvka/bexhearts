@@ -21,13 +21,14 @@ export function ProfileSetupForm() {
   const onSubmit = async (data: ProfileSetupFormData) => {
     setProfileData({ fullName: data.fullName, denomination: data.denomination });
 
+    // onboarding_completed is set on the relationship-stage screen (the last
+    // onboarding step) so route-gating can't skip past the stage question.
     await updateProfile.mutateAsync({
       full_name: data.fullName,
       denomination: data.denomination || null,
-      onboarding_completed: true,
     });
 
-    router.push('/(onboarding)/partner-invite');
+    router.push('/(onboarding)/relationship-stage');
   };
 
   return (

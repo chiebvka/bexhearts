@@ -10,6 +10,7 @@ import { spacing } from '@/theme/spacing';
 import { useAuth } from '../hooks/useAuth';
 import { getLastUsedMethod, type AuthMethod } from '../lastUsedMethod';
 import { signInSchema, type SignInFormData } from '../schemas';
+import { SocialAuthButtons } from './SocialAuthButtons';
 
 export function SignInForm() {
   const { signIn, isLoading, error } = useAuth();
@@ -71,6 +72,8 @@ export function SignInForm() {
         fullWidth
         style={styles.button}
       />
+
+      <SocialAuthButtons lastUsed={lastUsed} />
 
       <Link href="/(auth)/forgot-password" style={styles.link}>
         <Text variant="labelLarge" color={colors.primary[500]}>

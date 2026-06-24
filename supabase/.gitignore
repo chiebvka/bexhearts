@@ -1,6 +1,8 @@
 # Supabase
 .branches
 .temp
+# Local Studio scratch queries ("Untitled query N.sql") — not project source.
+snippets/
 
 # dotenvx
 .env.keys

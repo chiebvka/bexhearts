@@ -1,11 +1,22 @@
 import { useEffect, type PropsWithChildren } from 'react';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
+import { useUIStore } from '@/stores/ui.store';
 import { authService } from '@/services/supabase/auth';
 import { getProfile, getCouple } from '@/services/supabase/database';
-import { initRevenueCat, identifyUser as rcIdentify } from '@/services/revenuecat/client';
-import { identifySuperwallUser } from '@/services/superwall/client';
-import { identify as analyticsIdentify } from '@/services/analytics/events';
+import {
+  initRevenueCat,
+  identifyUser as rcIdentify,
+  logOutRevenueCat,
+} from '@/services/revenuecat/client';
+import {
+  identifySuperwallUser,
+  resetSuperwallUser,
+} from '@/services/superwall/client';
+import {
+  identify as analyticsIdentify,
+  reset as resetAnalytics,
+} from '@/services/analytics/events';
 import { queryClient } from '@/api/client';
 
 async function bootstrapUserContext(userId: string) {
@@ -13,6 +24,19 @@ async function bootstrapUserContext(userId: string) {
 
   const profile = await getProfile(userId);
   if (!profile) return;
+
+  // Reactivation: signing back in within the 7-day grace window cancels a
+  // pending account deletion (00005).
+  if (profile.deletion_scheduled_at) {
+    try {
+      await authService.cancelAccountDeletion();
+      useUIStore
+        .getState()
+        .showToast('Welcome back — your account deletion was cancelled.', 'success');
+    } catch {
+      // Best-effort; the deletion can still be cancelled by re-trying later.
+    }
+  }
 
   if (profile.couple_id) {
     const couple = await getCouple(profile.couple_id);
@@ -59,6 +83,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
         clear();
         clearCouple();
         queryClient.clear();
+        // Purge identity from the paid/analytics SDKs so the next user on this
+        // device doesn't inherit it (also covers account-deletion PII cleanup).
+        resetAnalytics();
+        resetSuperwallUser();
+        void logOutRevenueCat();
       }
     });
 

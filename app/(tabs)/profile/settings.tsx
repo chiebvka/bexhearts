@@ -1,4 +1,5 @@
 import { Pressable, Linking, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { Text, Card } from '@/components/ui';
@@ -31,6 +32,20 @@ export default function SettingsScreen() {
           </Pressable>
         ))}
       </Card>
+
+      <Text variant="labelLarge" color={colors.text.tertiary} style={styles.dangerLabel}>
+        Account
+      </Text>
+      <Card variant="outlined" padding="sm">
+        <Pressable
+          onPress={() => router.push('/(tabs)/profile/delete-account')}
+          style={styles.row}
+          accessibilityRole="button"
+        >
+          <Text variant="bodyLarge" color={colors.error}>Delete Account</Text>
+          <Text variant="bodyMedium" color={colors.error}>›</Text>
+        </Pressable>
+      </Card>
     </ScreenContainer>
   );
 }
@@ -38,6 +53,11 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   title: {
     marginBottom: spacing.lg,
+  },
+  dangerLabel: {
+    marginTop: spacing.xl,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.sm,
   },
   row: {
     flexDirection: 'row',

@@ -1,5 +1,32 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 
+// Google sign-in (B3) only adds its iOS URL scheme to the native build once the
+// reversed client ID is supplied via env. Until then the plugin is omitted, so
+// prebuild stays clean and Google degrades gracefully (the button is hidden).
+const googleIosUrlScheme = process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME;
+
+const plugins: NonNullable<ExpoConfig['plugins']> = [
+  'expo-router',
+  'expo-font',
+  'expo-secure-store',
+  [
+    'expo-notifications',
+    {
+      icon: './assets/icon.png',
+      color: '#9849FA',
+    },
+  ],
+  'expo-apple-authentication',
+  'expo-web-browser',
+];
+
+if (googleIosUrlScheme) {
+  plugins.push([
+    '@react-native-google-signin/google-signin',
+    { iosUrlScheme: googleIosUrlScheme },
+  ]);
+}
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Bexhearts',
@@ -31,20 +58,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     package: 'com.bexhearts.app',
     edgeToEdgeEnabled: true,
   },
-  plugins: [
-    'expo-router',
-    'expo-font',
-    'expo-secure-store',
-    [
-      'expo-notifications',
-      {
-        icon: './assets/icon.png',
-        color: '#9849FA',
-      },
-    ],
-    'expo-apple-authentication',
-    'expo-web-browser',
-  ],
+  plugins,
   experiments: {
     typedRoutes: true,
   },

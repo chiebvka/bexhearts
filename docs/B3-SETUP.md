@@ -1,6 +1,8 @@
 # B3 SETUP — Dev Build + Social Sign-In (Apple + Google)
 
-> **For the owner to action.** B3 needs a **development build** (Expo Go can't run native auth/MMKV/RevenueCat/Superwall) plus credentials from Apple & Google. Work through Parts 1–3, fill the **Bring-back checklist** (Part 4), then start a fresh chat, paste `docs/HANDOFF.md`, say *"I have the B3 credentials"*, and the agent wires + tests it.
+> **✅ STATUS (2026-06-21): dev build built + app-side wiring COMPLETE + gate green.** What's left is **owner credentials + flipping two config switches + an on-device verify** — no more code. Jump to **Part 4** for the exact checklist. Parts 1–3 below are kept for reference / context.
+>
+> **For the owner to action.** B3 needs a **development build** (Expo Go can't run native auth/MMKV/RevenueCat/Superwall) plus credentials from Apple & Google. The dev build is done and the code is wired; you now (a) finish creating the Apple/Google credentials, (b) flip `enabled = true` for each provider in `supabase/config.toml` + set env, (c) rebuild & verify on the simulator/device.
 >
 > Bundle ID (both platforms): **`com.bexhearts.app`**. You self-host Supabase on the VPS, so provider config goes in your **GoTrue env / Supabase Studio Auth settings**, not a hosted dashboard.
 
@@ -63,9 +65,15 @@ Native flow via `@react-native-google-signin/google-signin` → `signInWithIdTok
 - **Apple $99/yr** has no individual/student discount (waivers only for nonprofit/edu/gov). The **15%** rate = App Store **Small Business Program** (<$1M/yr), enrolled later. **Google Play** = one-time **$25**, 15% on first $1M.
 - You can build/run on the **simulator with a free Apple ID**; the paid program is needed to enable "Sign in with Apple" for submission + TestFlight/ship.
 
-## Notes for the wiring agent (new chat)
-- B3 modules (STEPS.md): M1 Apple button → `authService.signInWithApple`; M2 Google (`@react-native-google-signin` + provider config + handler); M3 always show Apple when Google is shown (App Store rule); record `setLastUsedMethod('apple'|'google')` on success (B1·M5 infra is ready); the SignInForm "last used" hint becomes per-method.
-- After B3: **B4 (account deletion)** — needs `delete_my_account()` migration + Settings UI (re-auth via `authService.reauthenticate`, already stubbed). Then **Stage C** (onboarding/partner-linking).
+## ✅ What the wiring agent already did (2026-06-21) — DONE, don't redo
+- **Dev build**: confirmed built (CocoaPods, `ios/` prebuilt, `Podfile.lock`, scripts → `expo run:`). RC dedupe **deferred to Stage F** (not a blocker — autolinking uses top-level RC 8.x; forcing Superwall onto 8.x needs runtime verification only possible once Superwall/RevenueCat have keys).
+- **Code (B3·M1–M3)**: `@react-native-google-signin/google-signin` v16 installed; conditional config plugin in `app.config.ts` (adds the iOS URL scheme only when `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` is set). `authService.signInWithGoogle/signInWithApple` → `signInWithIdToken`. `src/features/auth/socialAuth.ts` = native token-getters (`getAppleIdentityToken`, `getGoogleIdToken`, both null-on-cancel) + `isGoogleSignInConfigured()` graceful gate. `SocialAuthButtons` on **sign-in + sign-up** (native Apple button iOS-only, Google when configured → Apple-always-with-Google satisfies the App Store rule, per-method "last used" tag). `useAuth.signInWithApple/signInWithGoogle` orchestrate + `setLastUsedMethod('apple'|'google')`. Tests: `__tests__/auth/socialSignIn.test.ts` + `socialAuth.test.ts`. `supabase/config.toml` providers pre-wired (`enabled = false`).
+
+## What's left (owner) — then it verifies itself on the dev build
+1. **Apple** (acct under review ~2 business days): once approved + App ID `com.bexhearts.app` has "Sign In with Apple" → set `[auth.external.apple] enabled = true` in `supabase/config.toml` → `supabase stop && supabase start`. No secret needed (native flow). Tap "Continue with Apple" in the dev build.
+2. **Google**: finish the **iOS OAuth client** (bundle ID `com.bexhearts.app`; App Store ID OPTIONAL). Then: in `.env` set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME` (reversed iOS client ID); export `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` (=Web id) + `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` (=Web secret); set `[auth.external.google] enabled = true`; `supabase stop && supabase start`; **rebuild** `npx expo run:ios` (the URL scheme is a native change). The Google button appears automatically once the Web client ID env is real. Also create **OAuth consent screen test users** (Audience) while in Testing, and keep scopes to **email + profile + openid** (non-sensitive → no Google verification).
+   - **Android client (no code/env change — matched by package + SHA-1):** create an **Android** OAuth client, package `com.bexhearts.app`. SHA-1 for local-debug testing = the Mac's `~/.android/debug.keystore` (`keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`). **At launch add a 2nd Android client** with the **Google Play App Signing** SHA-1 (Play Console → Setup → App signing) and/or the EAS upload-key SHA-1. The Android client ID is not used in app code/Supabase — the token audience is the **Web** client ID on Android too.
+- After B3: **B4 (account deletion)** — needs `delete_my_account()` migration + Settings UI (re-auth via `authService.reauthenticate`, already stubbed). Then **Stage C** (onboarding/partner-linking). **B4 needs no credentials — can be built in parallel while Apple is under review.**
 
 ---
 

@@ -3,11 +3,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { Text, Avatar } from '@/components/ui';
 import { SectionHeader } from '@/components/layout/SectionHeader';
-import { StreakCounter, QuickActions } from '@/features/dashboard';
+import { StreakCounter, QuickActions, WaitingForPartnerCard } from '@/features/dashboard';
 import { DevotionalCard } from '@/features/devotional';
 import { useMyProfile } from '@/api/profiles';
 import { useTodayDevotional } from '@/api/devotionals';
 import { usePartnerProfile } from '@/api/couples';
+import { useCoupleStore } from '@/stores/couple.store';
+import { getGreeting } from '@/utils/greeting';
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { router } from 'expo-router';
@@ -17,6 +19,7 @@ export default function HomeScreen() {
   const { data: profile } = useMyProfile();
   const { data: partner } = usePartnerProfile();
   const { data: todayDevotional } = useTodayDevotional();
+  const isLinked = useCoupleStore((s) => s.isLinked);
 
   const firstName = profile?.full_name?.split(' ')[0] || 'there';
 
@@ -25,7 +28,7 @@ export default function HomeScreen() {
       <View style={styles.greeting}>
         <View>
           <Text variant="bodyMedium" color={colors.text.secondary}>
-            Good morning,
+            {getGreeting()},
           </Text>
           <Text variant="headlineLarge">{firstName}</Text>
         </View>
@@ -40,6 +43,8 @@ export default function HomeScreen() {
           )}
         </View>
       </View>
+
+      {!isLinked && <WaitingForPartnerCard />}
 
       <StreakCounter />
 

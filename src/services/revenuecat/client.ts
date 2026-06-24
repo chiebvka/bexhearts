@@ -31,6 +31,18 @@ export async function identifyUser(userId: string) {
   }
 }
 
+// Detach the current user from RevenueCat (sign-out / account deletion). Resets
+// to an anonymous app user so the next user on the device doesn't inherit
+// entitlements. Best-effort: no-ops when RevenueCat isn't configured.
+export async function logOutRevenueCat() {
+  try {
+    const { default: Purchases } = await import('react-native-purchases');
+    await Purchases.logOut();
+  } catch {
+    // Not configured (dev) or already anonymous — nothing to do.
+  }
+}
+
 export async function checkPremium(): Promise<boolean> {
   try {
     const { default: Purchases } = await import('react-native-purchases');

@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from './keys';
 import { supabase } from '@/services/supabase/client';
+import { refreshInviteCode } from '@/services/supabase/database';
 import { useCoupleStore } from '@/stores/couple.store';
 
 export function useMyCouple() {
@@ -18,6 +19,22 @@ export function useMyCouple() {
       return data;
     },
     enabled: !!coupleId,
+  });
+}
+
+// Re-issue the couple's invite code (solo-mode re-invite / expired code).
+export function useRegenerateInviteCode() {
+  const queryClient = useQueryClient();
+  const coupleId = useCoupleStore((s) => s.coupleId);
+
+  return useMutation({
+    mutationFn: () => {
+      if (!coupleId) throw new Error('No couple to re-invite for');
+      return refreshInviteCode(coupleId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.couple.mine() });
+    },
   });
 }
 

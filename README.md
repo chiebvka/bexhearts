@@ -161,13 +161,24 @@ A real phone cannot reach `127.0.0.1` (that's the phone itself, not your Mac). I
 
 Simulators/emulators don't have this problem (the iOS Simulator shares the Mac's network; if you ever hit issues on Android emulator, use `http://10.0.2.2:55321`).
 
-### Manual smoke test (the partner-linking flow needs two users)
+### Manual smoke test — two-user partner linking (C2·M3, the make-or-break flow)
 
-1. Sign up as user A (any email — confirmation emails are caught by Inbucket at `http://127.0.0.1:55324`; email confirmation is disabled locally so you're signed in immediately).
-2. Complete profile setup → you land on the partner-invite screen → generate an invite code.
-3. Sign out (or use a second simulator), sign up as user B.
-4. Complete user B's profile → choose "I have a code" → enter A's code.
-5. Both users should now land on the dashboard with each other's avatar visible.
+> Needs **two accounts**. Easiest: run two simulators (e.g. `npx expo run:ios` once, then launch a second simulator from Xcode → `i` again), or use one simulator + sign out between users. Local email confirmation is ON in config but Mailpit (`http://127.0.0.1:55324`) catches the codes.
+
+**User A (inviter):**
+1. Sign up as A → verify the OTP from Mailpit → complete onboarding: profile → **relationship stage** → **personalization** → **plan summary** (paywall no-ops in dev) → partner-invite.
+2. Choose **Invite my partner** → a code is generated (the couple row is created here). Note the code. *(On the dashboard, A in solo mode also sees the **"Invite your partner"** card with the same code + Share / Generate-new-code.)*
+
+**User B (joiner):**
+3. On a second simulator (or after signing A out), sign up as B → complete onboarding the same way.
+4. At partner-invite choose **I have a code** → enter A's code → B lands on the dashboard. **B should immediately see A's avatar** (no app restart needed — the joiner now resolves the partner on link).
+
+**Verify the link both ways:**
+5. **B** sees A's avatar + no "Invite your partner" card (linked).
+6. **A** currently needs to **reopen the app** (or it re-bootstraps) to see B's avatar — couple realtime is not wired yet (Phase 4 / Step D7). After reopening, A sees B and the solo invite card is gone.
+7. **RLS isolation:** add a prayer as A and confirm B sees it (shared couple data), and that a *third, unrelated* account never sees this couple's data.
+
+**Expected:** both land on the dashboard showing each other; shared data is visible to both; cross-couple reads are denied. (Invite codes expire 48h after generation and the moment a partner links — use **Generate a new code** to re-issue.)
 
 ---
 

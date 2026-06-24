@@ -4,6 +4,7 @@ import { authService } from '@/services/supabase/auth';
 import { track, ANALYTICS_EVENTS } from '@/services/analytics/events';
 import { getErrorMessage } from '@/utils/error';
 import { setLastUsedMethod } from '../lastUsedMethod';
+import { getAppleIdentityToken, getGoogleIdToken } from '../socialAuth';
 import type { SignInFormData, SignUpFormData } from '../schemas';
 
 // Supabase returns this when a user signs in before confirming their email.
@@ -110,10 +111,86 @@ export function useAuth() {
     }
   };
 
+  const signInWithApple = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const token = await getAppleIdentityToken();
+      if (!token) return; // user cancelled the Apple sheet
+      const { error: authError } = await authService.signInWithApple(token);
+      if (authError) throw authError;
+      track(ANALYTICS_EVENTS.SIGN_IN, { method: 'apple' });
+      void setLastUsedMethod('apple');
+      // The AuthProvider listener routes us into the funnel; replace to be safe.
+      router.replace('/');
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const token = await getGoogleIdToken();
+      if (!token) return; // user cancelled the Google sheet
+      const { error: authError } = await authService.signInWithGoogle(token);
+      if (authError) throw authError;
+      track(ANALYTICS_EVENTS.SIGN_IN, { method: 'google' });
+      void setLastUsedMethod('google');
+      router.replace('/');
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signOut = async () => {
     await authService.signOut();
     track(ANALYTICS_EVENTS.SIGN_OUT);
     router.replace('/(auth)/sign-in');
+  };
+
+  // Schedule account deletion with a 7-day grace period (App Store requirement).
+  // For email/password users we re-authenticate first (sensitive-action gate,
+  // locked decision); social users have no password to re-enter, so pass no
+  // `reauth`. On success we sign out — the AuthProvider's SIGNED_OUT handler
+  // clears stores + query cache and resets the paid/analytics SDKs — and route
+  // back to sign-in. Signing in again before the deadline cancels the deletion.
+  const deleteAccount = async (reauth?: {
+    email: string;
+    password: string;
+  }): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (reauth) {
+        const { error: reauthError } = await authService.reauthenticate(
+          reauth.email,
+          reauth.password
+        );
+        if (reauthError) throw reauthError;
+      }
+
+      const { error: deleteError } = await authService.requestAccountDeletion();
+      if (deleteError) throw deleteError;
+
+      track(ANALYTICS_EVENTS.ACCOUNT_DELETED);
+      await authService.signOut();
+      router.replace('/(auth)/sign-in');
+      return true;
+    } catch (err) {
+      setError(getErrorMessage(err));
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const requestPasswordReset = async (email: string) => {
@@ -181,7 +258,10 @@ export function useAuth() {
     signUp,
     verifyEmailOtp,
     resendEmailOtp,
+    signInWithApple,
+    signInWithGoogle,
     signOut,
+    deleteAccount,
     requestPasswordReset,
     completePasswordReset,
     resendPasswordReset,

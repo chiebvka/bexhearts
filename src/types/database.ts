@@ -20,6 +20,8 @@ export interface Database {
           couple_id: string | null;
           push_token: string | null;
           timezone: string;
+          deletion_scheduled_at: string | null;
+          growth_focus: string[];
           created_at: string;
           updated_at: string;
         };
@@ -33,6 +35,8 @@ export interface Database {
           couple_id?: string | null;
           push_token?: string | null;
           timezone?: string;
+          deletion_scheduled_at?: string | null;
+          growth_focus?: string[];
           created_at?: string;
           updated_at?: string;
         };
@@ -46,6 +50,8 @@ export interface Database {
           couple_id?: string | null;
           push_token?: string | null;
           timezone?: string;
+          deletion_scheduled_at?: string | null;
+          growth_focus?: string[];
           updated_at?: string;
         };
         Relationships: [];
@@ -61,6 +67,8 @@ export interface Database {
           streak_count: number;
           streak_last_date: string | null;
           subscription_tier: 'free' | 'premium';
+          relationship_stage: 'dating' | 'engaged' | 'married' | null;
+          stage_started_on: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -74,6 +82,8 @@ export interface Database {
           streak_count?: number;
           streak_last_date?: string | null;
           subscription_tier?: 'free' | 'premium';
+          relationship_stage?: 'dating' | 'engaged' | 'married' | null;
+          stage_started_on?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -86,6 +96,8 @@ export interface Database {
           streak_count?: number;
           streak_last_date?: string | null;
           subscription_tier?: 'free' | 'premium';
+          relationship_stage?: 'dating' | 'engaged' | 'married' | null;
+          stage_started_on?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -344,6 +356,14 @@ export interface Database {
       link_partner: {
         Args: { p_invite_code: string };
         Returns: string;
+      };
+      request_account_deletion: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
+      cancel_account_deletion: {
+        Args: Record<string, never>;
+        Returns: undefined;
       };
     };
     Enums: Record<string, never>;

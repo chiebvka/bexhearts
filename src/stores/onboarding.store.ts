@@ -1,4 +1,8 @@
 import { create } from 'zustand';
+import type {
+  RelationshipStage,
+  GrowthFocus,
+} from '@/features/onboarding/schemas';
 
 interface ProfileSetupData {
   fullName: string;
@@ -10,9 +14,17 @@ interface OnboardingState {
   currentStep: number;
   profileData: Partial<ProfileSetupData>;
   inviteCode: string | null;
+  // Captured on the relationship-stage screen (C1); persisted onto the couple
+  // when it is created at the partner-invite step.
+  relationshipStage: RelationshipStage | null;
+  // Captured on the personalization screen (C1b); written to the profile and
+  // kept here so the plan-summary screen can render without a refetch.
+  growthFocus: GrowthFocus[];
   setStep: (step: number) => void;
   setProfileData: (data: Partial<ProfileSetupData>) => void;
   setInviteCode: (code: string) => void;
+  setRelationshipStage: (stage: RelationshipStage) => void;
+  setGrowthFocus: (focus: GrowthFocus[]) => void;
   reset: () => void;
 }
 
@@ -20,6 +32,8 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   currentStep: 0,
   profileData: {},
   inviteCode: null,
+  relationshipStage: null,
+  growthFocus: [],
 
   setStep: (currentStep) => set({ currentStep }),
 
@@ -30,10 +44,16 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
 
   setInviteCode: (inviteCode) => set({ inviteCode }),
 
+  setRelationshipStage: (relationshipStage) => set({ relationshipStage }),
+
+  setGrowthFocus: (growthFocus) => set({ growthFocus }),
+
   reset: () =>
     set({
       currentStep: 0,
       profileData: {},
       inviteCode: null,
+      relationshipStage: null,
+      growthFocus: [],
     }),
 }));

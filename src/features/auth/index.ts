@@ -1,5 +1,6 @@
 export { SignInForm } from './components/SignInForm';
 export { SignUpForm } from './components/SignUpForm';
+export { SocialAuthButtons } from './components/SocialAuthButtons';
 export { VerifyEmailForm } from './components/VerifyEmailForm';
 export { ResetPasswordForm } from './components/ResetPasswordForm';
 export { SignOutLink } from './components/SignOutLink';

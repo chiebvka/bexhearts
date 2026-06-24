@@ -27,15 +27,34 @@ export const authService = {
     });
   },
 
+  signInWithGoogle(idToken: string) {
+    return supabase.auth.signInWithIdToken({
+      provider: 'google',
+      token: idToken,
+    });
+  },
+
   signOut() {
     return supabase.auth.signOut();
   },
 
   // Re-verify the current password before a sensitive action (account deletion,
-  // password change). Returns an error if the password is wrong. Wired into the
-  // re-auth gate; the calling UI lands with account deletion in B4.
+  // password change). Returns an error if the password is wrong. Used by the
+  // account-deletion re-auth gate (B4) for email/password users.
   reauthenticate(email: string, password: string) {
     return supabase.auth.signInWithPassword({ email, password });
+  },
+
+  // Schedule account deletion with a 7-day grace period (00005). Returns the
+  // deadline. The caller signs out afterward; signing back in before the
+  // deadline cancels it (see cancelAccountDeletion / AuthProvider reactivation).
+  requestAccountDeletion() {
+    return supabase.rpc('request_account_deletion');
+  },
+
+  // Cancel a pending account deletion (reactivation).
+  cancelAccountDeletion() {
+    return supabase.rpc('cancel_account_deletion');
   },
 
   getSession() {

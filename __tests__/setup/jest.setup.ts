@@ -89,3 +89,28 @@ jest.mock('posthog-react-native', () => {
     reset: jest.fn(),
   }));
 });
+
+// Mock Apple authentication (native module — absent in the Jest runtime)
+jest.mock('expo-apple-authentication', () => ({
+  signInAsync: jest.fn(),
+  isAvailableAsync: jest.fn().mockResolvedValue(true),
+  AppleAuthenticationScope: { FULL_NAME: 0, EMAIL: 1 },
+  AppleAuthenticationButton: 'AppleAuthenticationButton',
+  AppleAuthenticationButtonType: { SIGN_IN: 0, CONTINUE: 1, SIGN_UP: 2 },
+  AppleAuthenticationButtonStyle: { WHITE: 0, WHITE_OUTLINE: 1, BLACK: 2 },
+}));
+
+// Mock Google sign-in (native module — absent in the Jest runtime)
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: {
+    configure: jest.fn(),
+    hasPlayServices: jest.fn().mockResolvedValue(true),
+    signIn: jest.fn(),
+    signOut: jest.fn(),
+  },
+  statusCodes: {
+    SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
+  },
+}));

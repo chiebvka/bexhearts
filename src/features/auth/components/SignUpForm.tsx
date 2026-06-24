@@ -7,6 +7,7 @@ import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { useAuth } from '../hooks/useAuth';
 import { signUpSchema, type SignUpFormData } from '../schemas';
+import { SocialAuthButtons } from './SocialAuthButtons';
 
 export function SignUpForm() {
   const { signUp, isLoading, error } = useAuth();
@@ -63,6 +64,8 @@ export function SignUpForm() {
         fullWidth
         style={styles.button}
       />
+
+      <SocialAuthButtons />
     </View>
   );
 }

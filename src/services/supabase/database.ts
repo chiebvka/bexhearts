@@ -1,5 +1,6 @@
 import { supabase } from './client';
-import type { Profile, Couple, ProfileUpdate } from '@/types/api';
+import { withUniqueInviteCode } from '@/utils/invite-code';
+import type { Profile, Couple, CoupleInsert, ProfileUpdate } from '@/types/api';
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
@@ -27,6 +28,28 @@ export async function updateProfile(userId: string, updates: ProfileUpdate): Pro
   return data;
 }
 
+// Issue a fresh invite code + 48h expiry on an existing couple. Powers re-invite
+// after a partner leaves (a left couple has an expired code) and re-generating an
+// expired onboarding code. RLS ("Partners can update couple") authorizes it.
+export async function refreshInviteCode(coupleId: string): Promise<string> {
+  const expiresAt = new Date();
+  expiresAt.setHours(expiresAt.getHours() + 48);
+
+  // Retry on the rare unique-code collision (C2·M1).
+  const { code } = await withUniqueInviteCode((newCode) =>
+    supabase
+      .from('couples')
+      .update({
+        invite_code: newCode,
+        invite_code_expires_at: expiresAt.toISOString(),
+      })
+      .eq('id', coupleId)
+      .then(({ error }) => ({ data: null, error }))
+  );
+
+  return code;
+}
+
 export async function getCouple(coupleId: string): Promise<Couple | null> {
   const { data, error } = await supabase
     .from('couples')
@@ -41,21 +64,29 @@ export async function getCouple(coupleId: string): Promise<Couple | null> {
   return data;
 }
 
-export async function createCouple(partnerAId: string, inviteCode: string): Promise<Couple> {
+export async function createCouple(
+  partnerAId: string,
+  options?: Pick<CoupleInsert, 'relationship_stage' | 'stage_started_on'>
+): Promise<Couple> {
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 48);
 
-  const { data, error } = await supabase
-    .from('couples')
-    .insert({
-      partner_a_id: partnerAId,
-      invite_code: inviteCode,
-      invite_code_expires_at: expiresAt.toISOString(),
-    })
-    .select()
-    .single();
+  // Generate a unique invite code, retrying on the rare collision (C2·M1).
+  const { data } = await withUniqueInviteCode<Couple>((code) =>
+    supabase
+      .from('couples')
+      .insert({
+        partner_a_id: partnerAId,
+        invite_code: code,
+        invite_code_expires_at: expiresAt.toISOString(),
+        relationship_stage: options?.relationship_stage ?? null,
+        stage_started_on: options?.stage_started_on ?? null,
+      })
+      .select()
+      .single()
+  );
 
-  if (error) throw error;
+  if (!data) throw new Error('Failed to create couple');
 
   // Update the creator's profile with the couple_id
   await supabase
