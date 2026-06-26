@@ -18,6 +18,19 @@ const plugins: NonNullable<ExpoConfig['plugins']> = [
   ],
   'expo-apple-authentication',
   'expo-web-browser',
+  [
+    // Google Sign-In's iOS SDK pulls in the Swift pod AppCheckCore, whose deps
+    // GoogleUtilities + RecaptchaInterop don't define modules, so `pod install`
+    // fails when integrating them as plain static libraries. Static frameworks
+    // DO define modules — this is the documented react-native-google-signin +
+    // Expo fix (Podfile consumes ios.useFrameworks).
+    'expo-build-properties',
+    {
+      ios: {
+        useFrameworks: 'static',
+      },
+    },
+  ],
 ];
 
 if (googleIosUrlScheme) {
