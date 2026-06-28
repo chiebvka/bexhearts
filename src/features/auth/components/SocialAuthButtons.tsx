@@ -1,4 +1,5 @@
 import { Platform, View, StyleSheet } from 'react-native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Button, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
@@ -6,6 +7,12 @@ import { spacing } from '@/theme/spacing';
 import { useAuth } from '../hooks/useAuth';
 import { isGoogleSignInConfigured } from '../socialAuth';
 import type { AuthMethod } from '../lastUsedMethod';
+
+// Native social sign-in (Apple/Google) needs the development build — the native
+// modules aren't present in Expo Go. Hide the buttons there so the screen stays
+// clean during Expo Go development; they appear automatically in the dev build.
+const isExpoGo =
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 interface SocialAuthButtonsProps {
   // When provided (sign-in screen), shows a "Last used" tag on the matching
@@ -27,8 +34,8 @@ export function SocialAuthButtons({ lastUsed }: SocialAuthButtonsProps) {
   // App Store rule: whenever a third-party login (Google) is offered, Apple must
   // be too. On iOS we always show Apple, so showing Google alongside is compliant.
   // Apple is iOS-only; Android shows Google only (no Apple requirement there).
-  const showApple = Platform.OS === 'ios';
-  const showGoogle = isGoogleSignInConfigured();
+  const showApple = Platform.OS === 'ios' && !isExpoGo;
+  const showGoogle = isGoogleSignInConfigured() && !isExpoGo;
 
   if (!showApple && !showGoogle) return null;
 
