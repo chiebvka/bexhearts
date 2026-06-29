@@ -85,6 +85,7 @@ A subscription mobile app for **Christian couples** to grow their relationship a
 - [x] Migration `00003_delete_my_account.sql` — `delete_my_account()` SECURITY DEFINER RPC for account deletion (B4); **owner applies in Studio, then regen types** *(superseded by `00005` below)*
 - [x] Migration `00005_account_deletion_grace.sql` — `profiles.deletion_scheduled_at` + `request_account_deletion()` / `cancel_account_deletion()` / `process_due_account_deletions()` (7-day grace + non-destructive partner hand-off; drops `delete_my_account`). **⚠️ Owner applies in Studio + regen types.** Needs a pg_cron schedule for the processor (Phase 6/Stage I)
 - [x] Migration `00006_personalization.sql` — `profiles.growth_focus TEXT[]` (C1b "what do you want to grow in?", per-person). **⚠️ Owner applies in Studio + regen types** (the personalize screen writes it at runtime)
+- [x] Migration `00007_default_avatar.sql` — `handle_new_user()` now auto-assigns a DiceBear `open-peeps` avatar (seeded by user id) so new accounts aren't a blank purple-initials circle; backfills existing null avatars. **⚠️ Owner applies in Studio.** (No type change.)
 - [x] Local stack config (`supabase/config.toml`, custom ports 55321–55324, email confirmation off for dev)
 - [~] TypeScript DB types — `src/types/database.ts` is hand-written to match schema; regenerate via `supabase gen types typescript --local` once local DB is up and treat generated output as authoritative
 - [ ] **Missing UPDATE RLS policy on `check_ins`** (needed for resubmitting the weekly check-in — see Bug #1)
