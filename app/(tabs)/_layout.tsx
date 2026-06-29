@@ -1,20 +1,44 @@
+import { type ComponentProps } from 'react';
 import { Text as RNText } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/stores/auth.store';
 import { LoadingScreen } from '@/components/ui';
 import { colors } from '@/theme/colors';
 import { fonts } from '@/theme/typography';
 
-function TabIcon({ name, color }: { name: string; color: string }) {
-  const icons: Record<string, string> = {
-    home: '🏠',
-    book: '📖',
-    heart: '💛',
-    calendar: '📅',
-    user: '👤',
-  };
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
-  return <RNText style={{ fontSize: 20 }}>{icons[name] || '●'}</RNText>;
+const INACTIVE = colors.neutral[400];
+// Active (filled) tab color — primary purple (chosen 2026-06-26).
+const ACTIVE = colors.primary[500];
+
+function tabBarIcon(active: IoniconName, inactive: IoniconName, activeColor: string) {
+  const Icon = ({ focused }: { focused: boolean }) => (
+    <Ionicons
+      name={focused ? active : inactive}
+      size={24}
+      color={focused ? activeColor : INACTIVE}
+    />
+  );
+  Icon.displayName = 'TabBarIcon';
+  return Icon;
+}
+
+function tabBarLabel(label: string, activeColor: string) {
+  const Label = ({ focused }: { focused: boolean }) => (
+    <RNText
+      style={{
+        fontFamily: fonts.sans.medium,
+        fontSize: 11,
+        color: focused ? activeColor : INACTIVE,
+      }}
+    >
+      {label}
+    </RNText>
+  );
+  Label.displayName = 'TabBarLabel';
+  return Label;
 }
 
 export default function TabsLayout() {
@@ -28,16 +52,10 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary[500],
-        tabBarInactiveTintColor: colors.neutral[400],
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.neutral[200],
           paddingTop: 4,
-        },
-        tabBarLabelStyle: {
-          fontFamily: fonts.sans.medium,
-          fontSize: 11,
         },
       }}
     >
@@ -45,35 +63,40 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <TabIcon name="home" color={color} />,
+          tabBarIcon: tabBarIcon('home', 'home-outline', ACTIVE),
+          tabBarLabel: tabBarLabel('Home', ACTIVE),
         }}
       />
       <Tabs.Screen
         name="devotional"
         options={{
           title: 'Devotional',
-          tabBarIcon: ({ color }) => <TabIcon name="book" color={color} />,
+          tabBarIcon: tabBarIcon('book', 'book-outline', ACTIVE),
+          tabBarLabel: tabBarLabel('Devotional', ACTIVE),
         }}
       />
       <Tabs.Screen
         name="connect"
         options={{
           title: 'Connect',
-          tabBarIcon: ({ color }) => <TabIcon name="heart" color={color} />,
+          tabBarIcon: tabBarIcon('heart', 'heart-outline', ACTIVE),
+          tabBarLabel: tabBarLabel('Connect', ACTIVE),
         }}
       />
       <Tabs.Screen
         name="dates"
         options={{
           title: 'Dates',
-          tabBarIcon: ({ color }) => <TabIcon name="calendar" color={color} />,
+          tabBarIcon: tabBarIcon('calendar', 'calendar-outline', ACTIVE),
+          tabBarLabel: tabBarLabel('Dates', ACTIVE),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <TabIcon name="user" color={color} />,
+          tabBarIcon: tabBarIcon('person', 'person-outline', ACTIVE),
+          tabBarLabel: tabBarLabel('Profile', ACTIVE),
         }}
       />
     </Tabs>

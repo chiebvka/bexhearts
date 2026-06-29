@@ -17,7 +17,13 @@ export default function ProfileScreen() {
   return (
     <ScreenContainer style={{ paddingTop: insets.top + spacing.md }}>
       <View style={styles.header}>
-        <Avatar uri={profile?.avatar_url} name={profile?.full_name} size="xl" />
+        <Pressable
+          onPress={() => router.push('/(tabs)/profile/avatar')}
+          accessibilityRole="button"
+          accessibilityLabel="Change avatar"
+        >
+          <Avatar uri={profile?.avatar_url} name={profile?.full_name} size="xl" />
+        </Pressable>
         <Text variant="headlineLarge" style={styles.name}>
           {profile?.full_name || 'Your Name'}
         </Text>
