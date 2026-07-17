@@ -22,7 +22,10 @@ export default function Index() {
     return <Redirect href="/(onboarding)/welcome" />;
   }
 
-  if (!coupleId) {
+  // The profile row is the source of truth for couple membership — the store
+  // hydrates asynchronously, and trusting it alone re-routed already-linked
+  // users to partner-invite on cold start (bug 2026-07-04).
+  if (!profile?.couple_id && !coupleId) {
     return <Redirect href="/(onboarding)/partner-invite" />;
   }
 

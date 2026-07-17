@@ -2,8 +2,9 @@ import { View, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
-import { Text, Avatar, Card, Button } from '@/components/ui';
+import { Text, Avatar, Button } from '@/components/ui';
 import { SubscriptionStatus } from '@/features/subscription';
+import { SettingsSections } from '@/features/profile/components/SettingsSections';
 import { useMyProfile } from '@/api/profiles';
 import { useAuth } from '@/features/auth';
 import { colors } from '@/theme/colors';
@@ -39,15 +40,9 @@ export default function ProfileScreen() {
 
       <SubscriptionStatus />
 
-      <Card variant="outlined" padding="md" style={styles.settingsCard}>
-        <Pressable
-          onPress={() => router.push('/(tabs)/profile/settings')}
-          style={styles.settingsRow}
-        >
-          <Text variant="bodyLarge">Settings</Text>
-          <Text variant="bodyMedium" color={colors.text.tertiary}>›</Text>
-        </Pressable>
-      </Card>
+      {/* Settings live directly on the profile (owner ask 2026-07-05) —
+          nothing hides behind an extra tap. */}
+      <SettingsSections />
 
       <Button
         title="Sign Out"
@@ -67,14 +62,6 @@ const styles = StyleSheet.create({
   name: {
     marginTop: spacing.md,
     marginBottom: spacing.xs,
-  },
-  settingsCard: {
-    marginTop: spacing.md,
-  },
-  settingsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   signOut: {
     marginTop: spacing.xl,

@@ -1,17 +1,35 @@
-import { View, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { View, Pressable, StyleSheet } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { FormInput } from '@/components/forms/FormInput';
 import { Button, Text } from '@/components/ui';
+import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { borderRadius } from '@/theme/borderRadius';
 import { useOnboardingStore } from '@/stores/onboarding.store';
 import { useUpdateProfile } from '@/api/profiles';
 import { profileSetupSchema, type ProfileSetupFormData } from '../schemas';
 
+const DENOMINATIONS = [
+  'Non-denominational',
+  'Baptist',
+  'Catholic',
+  'Methodist',
+  'Pentecostal',
+  'Presbyterian',
+  'Lutheran',
+  'Anglican / Episcopal',
+  'Orthodox',
+  'Adventist',
+  'Other',
+];
+
 export function ProfileSetupForm() {
   const setProfileData = useOnboardingStore((s) => s.setProfileData);
   const updateProfile = useUpdateProfile();
+  const [denomination, setDenomination] = useState<string | null>(null);
 
   const { control, handleSubmit } = useForm<ProfileSetupFormData>({
     resolver: zodResolver(profileSetupSchema),
@@ -19,13 +37,13 @@ export function ProfileSetupForm() {
   });
 
   const onSubmit = async (data: ProfileSetupFormData) => {
-    setProfileData({ fullName: data.fullName, denomination: data.denomination });
+    setProfileData({ fullName: data.fullName, denomination: denomination ?? undefined });
 
     // onboarding_completed is set on the relationship-stage screen (the last
     // onboarding step) so route-gating can't skip past the stage question.
     await updateProfile.mutateAsync({
       full_name: data.fullName,
-      denomination: data.denomination || null,
+      denomination,
     });
 
     router.push('/(onboarding)/relationship-stage');
@@ -50,13 +68,28 @@ export function ProfileSetupForm() {
         containerStyle={styles.field}
       />
 
-      <FormInput
-        control={control}
-        name="denomination"
-        label="Denomination (optional)"
-        placeholder="e.g. Baptist, Catholic, Non-denominational"
-        containerStyle={styles.field}
-      />
+      <Text variant="labelLarge" color={colors.text.secondary} style={styles.label}>
+        Your tradition (optional)
+      </Text>
+      <View style={styles.chips}>
+        {DENOMINATIONS.map((d) => {
+          const selected = denomination === d;
+          return (
+            <Pressable
+              key={d}
+              onPress={() => setDenomination(selected ? null : d)}
+              style={[styles.chip, selected && styles.chipSelected]}
+            >
+              <Text
+                variant="labelMedium"
+                color={selected ? colors.text.inverse : colors.text.secondary}
+              >
+                {d}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
 
       <Button
         title="Continue"
@@ -82,6 +115,25 @@ const styles = StyleSheet.create({
   },
   field: {
     marginBottom: spacing.md,
+  },
+  label: {
+    marginBottom: spacing.sm,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  chip: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.full,
+    borderWidth: 1.5,
+    borderColor: colors.neutral[300],
+  },
+  chipSelected: {
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
   },
   button: {
     marginTop: spacing.lg,

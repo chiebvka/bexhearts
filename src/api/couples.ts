@@ -1,7 +1,12 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from './keys';
 import { supabase } from '@/services/supabase/client';
 import { refreshInviteCode } from '@/services/supabase/database';
+import {
+  subscribeToDevotionalProgress,
+  subscribeToCoupleUpdates,
+} from '@/services/supabase/realtime';
 import { useCoupleStore } from '@/stores/couple.store';
 
 export function useMyCouple() {
@@ -36,6 +41,35 @@ export function useRegenerateInviteCode() {
       queryClient.invalidateQueries({ queryKey: queryKeys.couple.mine() });
     },
   });
+}
+
+// D7 — couple-wide live sync. Mounted once (tabs layout) so a partner's
+// devotional completion (→ reflection reveal + streak) and any couple-row change
+// (streak / linking) reflect live on the other device without a manual refresh.
+export function useCoupleRealtime() {
+  const queryClient = useQueryClient();
+  const coupleId = useCoupleStore((s) => s.coupleId);
+
+  useEffect(() => {
+    if (!coupleId) return;
+
+    const progressChannel = subscribeToDevotionalProgress(coupleId, () => {
+      // partner completed a devotional → refresh reveal + today, and the couple
+      // row (the streak trigger may have just bumped streak_count).
+      queryClient.invalidateQueries({ queryKey: queryKeys.devotionals.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.couple.mine() });
+    });
+
+    const coupleChannel = subscribeToCoupleUpdates(coupleId, () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.couple.mine() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.couple.partner() });
+    });
+
+    return () => {
+      void supabase.removeChannel(progressChannel);
+      void supabase.removeChannel(coupleChannel);
+    };
+  }, [coupleId, queryClient]);
 }
 
 export function usePartnerProfile() {

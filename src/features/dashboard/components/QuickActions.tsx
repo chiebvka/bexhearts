@@ -60,5 +60,8 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 24,
+    // Emoji render taller than the latin font box — without a lineHeight
+    // iOS clips their tops (the sheared-heart bug, 2026-07-04).
+    lineHeight: 32,
   },
 });

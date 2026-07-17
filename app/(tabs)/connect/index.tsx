@@ -6,6 +6,11 @@ import { Text, Card } from '@/components/ui';
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { lightHaptic } from '@/lib/haptics';
+import { CheckInComparison, getCheckInComparisonState } from '@/features/check-in';
+import { useThisWeekComparison } from '@/api/check-ins';
+import { useAuthStore } from '@/stores/auth.store';
+import { useCoupleStore } from '@/stores/couple.store';
+import { usePartnerProfile } from '@/api/couples';
 
 const sections = [
   {
@@ -30,6 +35,18 @@ const sections = [
 
 export default function ConnectScreen() {
   const insets = useSafeAreaInsets();
+  const userId = useAuthStore((s) => s.user?.id);
+  const isLinked = useCoupleStore((s) => s.isLinked);
+  const { data: partner } = usePartnerProfile();
+  const { data: weekCheckIns } = useThisWeekComparison();
+
+  const mine = weekCheckIns?.find((c) => c.user_id === userId) ?? null;
+  const partnerCheckIn = weekCheckIns?.find((c) => c.user_id !== userId) ?? null;
+  const comparisonState = getCheckInComparisonState({
+    isLinked,
+    mine,
+    partner: partnerCheckIn,
+  });
 
   return (
     <ScreenContainer style={{ paddingTop: insets.top + spacing.md }}>
@@ -61,6 +78,13 @@ export default function ConnectScreen() {
           </Card>
         </Pressable>
       ))}
+
+      <CheckInComparison
+        state={comparisonState}
+        partnerName={partner?.full_name}
+        mine={mine}
+        partner={partnerCheckIn}
+      />
     </ScreenContainer>
   );
 }
@@ -82,6 +106,8 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 32,
+    // Emoji need explicit lineHeight or iOS clips their tops.
+    lineHeight: 42,
   },
   cardText: {
     flex: 1,

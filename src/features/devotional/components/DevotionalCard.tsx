@@ -17,7 +17,8 @@ export function DevotionalCard({ devotional, isCompleted, onPress }: DevotionalC
       <Card variant="elevated" padding="md">
         <View style={styles.header}>
           <Text variant="labelMedium" color={colors.text.tertiary}>
-            {formatRelativeDate(devotional.publish_date)}
+            {/* Pool devotionals have no publish_date — they ARE today's. */}
+            {devotional.publish_date ? formatRelativeDate(devotional.publish_date) : 'Today'}
           </Text>
           {isCompleted && <Badge label="Completed" variant="success" />}
           {devotional.is_premium && !isCompleted && <Badge label="Premium" variant="premium" />}

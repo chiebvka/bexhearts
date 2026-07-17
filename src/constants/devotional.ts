@@ -19,6 +19,8 @@ export const DATE_CATEGORIES = [
   { key: 'creative', label: 'Creative', icon: 'palette' },
   { key: 'simple', label: 'Simple', icon: 'heart' },
   { key: 'at-home', label: 'At Home', icon: 'home' },
+  { key: 'service', label: 'Service', icon: 'helping-hand' },
+  { key: 'food', label: 'Food', icon: 'utensils' },
 ] as const;
 
 export const BOUNDARY_CATEGORIES = [

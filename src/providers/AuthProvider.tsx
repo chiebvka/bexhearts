@@ -18,6 +18,7 @@ import {
   reset as resetAnalytics,
 } from '@/services/analytics/events';
 import { queryClient } from '@/api/client';
+import { withTimeout } from '@/utils/withTimeout';
 
 async function bootstrapUserContext(userId: string) {
   const { setCoupleContext } = useCoupleStore.getState();
@@ -46,7 +47,7 @@ async function bootstrapUserContext(userId: string) {
           ? couple.partner_b_id
           : couple.partner_a_id;
       setCoupleContext(couple.id, partnerId);
-      useCoupleStore.getState().setStreak(couple.streak_count);
+      useCoupleStore.getState().setStreak(couple.streak_count ?? 0);
     }
   }
 }
@@ -57,26 +58,70 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const clearCouple = useCoupleStore((s) => s.clear);
 
   useEffect(() => {
-    // Check existing session on mount
-    authService.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) {
-        bootstrapUserContext(session.user.id);
-      }
-    });
+    let active = true;
 
-    // Listen for auth state changes
+    // Check existing session on mount. getSession() REJECTS when the stored
+    // refresh token is invalid (e.g. after a local DB reset, or a real user's
+    // token expiring) — without this catch, setSession never runs, isLoading
+    // stays true, and the app hangs on the loading screen. Treat any failure as
+    // signed-out so the app always reaches sign-in.
+    (async () => {
+      try {
+        // Bounded: if session recovery hangs (common right after a Supabase
+        // restart, when the stored token is stale), fall through to signed-out
+        // instead of pinning the loading screen forever.
+        const {
+          data: { session },
+        } = await withTimeout(authService.getSession(), 6000);
+        if (!active) return;
+        if (session) {
+          try {
+            // Hydrate couple context BEFORE flipping the signed-in switch:
+            // the route gate and dashboard read the couple store, and setting
+            // the session first briefly routed linked users to partner-invite
+            // (bug 2026-07-04). Bounded so a hang degrades to signed-in
+            // without context instead of pinning the splash screen.
+            await withTimeout(bootstrapUserContext(session.user.id), 5000);
+          } catch {
+            // Non-fatal — the session is valid even if context hydration fails.
+          }
+        }
+        if (!active) return;
+        setSession(session);
+      } catch {
+        // Rejected OR timed out → treat as signed-out so the app always reaches
+        // sign-in (the onAuthStateChange listener re-hydrates if a real session
+        // recovers later).
+        if (active) setSession(null);
+      }
+    })();
+
+    // Post-sign-in hydration (profile/couple context + paid-SDK identify).
+    // Best-effort: never blocks or reverts the signed-in state.
+    const hydrateSignedIn = async (userId: string, email: string | null) => {
+      try {
+        await bootstrapUserContext(userId);
+        await initRevenueCat(userId);
+        await rcIdentify(userId);
+        identifySuperwallUser(userId);
+        analyticsIdentify(userId, { email });
+      } catch {
+        // Non-fatal — screens re-fetch their own data.
+      }
+    };
+
+    // Listen for auth state changes. The callback MUST stay synchronous:
+    // supabase-js awaits it while signInWithPassword is still pending, so any
+    // await here keeps the sign-in spinner up until hydration finishes — and a
+    // single wedged promise (SecureStore, a dead fetch) hangs sign-in forever.
     const {
       data: { subscription },
-    } = authService.onAuthStateChange(async (event, session) => {
+    } = authService.onAuthStateChange((event, session) => {
       setSession(session);
 
       if (event === 'SIGNED_IN' && session) {
-        await bootstrapUserContext(session.user.id);
-        await initRevenueCat(session.user.id);
-        await rcIdentify(session.user.id);
-        identifySuperwallUser(session.user.id);
-        analyticsIdentify(session.user.id, { email: session.user.email ?? null });
+        const { id, email } = session.user;
+        setTimeout(() => void hydrateSignedIn(id, email ?? null), 0);
       }
 
       if (event === 'SIGNED_OUT') {
@@ -91,7 +136,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, [setSession, clear, clearCouple]);
 
   return <>{children}</>;

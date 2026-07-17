@@ -28,6 +28,8 @@ export const queryKeys = {
       [...queryKeys.checkIns.all, coupleId] as const,
     byWeek: (coupleId: string, weekOf: string) =>
       [...queryKeys.checkIns.all, coupleId, weekOf] as const,
+    weekComparison: (coupleId: string, weekOf: string) =>
+      [...queryKeys.checkIns.all, coupleId, weekOf, 'comparison'] as const,
   },
   boundaries: {
     all: ['boundaries'] as const,
@@ -38,14 +40,33 @@ export const queryKeys = {
     all: ['date-ideas'] as const,
     byCategory: (category: string) =>
       [...queryKeys.dateIdeas.all, category] as const,
+    aggregates: () => [...queryKeys.dateIdeas.all, 'aggregates'] as const,
   },
   coupleDates: {
     all: ['couple-dates'] as const,
     byCoupleId: (coupleId: string) =>
       [...queryKeys.coupleDates.all, coupleId] as const,
+    byId: (id: string) => [...queryKeys.coupleDates.all, 'one', id] as const,
   },
   entitlement: {
     all: ['entitlement'] as const,
     premium: () => [...queryKeys.entitlement.all, 'premium'] as const,
+  },
+  activity: {
+    all: ['activity'] as const,
+    byCoupleId: (coupleId: string) =>
+      [...queryKeys.activity.all, coupleId] as const,
+  },
+  points: {
+    all: ['points'] as const,
+    total: (coupleId: string) => [...queryKeys.points.all, coupleId, 'total'] as const,
+    history: (coupleId: string) => [...queryKeys.points.all, coupleId, 'history'] as const,
+    leaderboard: () => [...queryKeys.points.all, 'leaderboard'] as const,
+  },
+  journal: {
+    all: ['journal'] as const,
+    timeline: (coupleId: string) => [...queryKeys.journal.all, coupleId, 'timeline'] as const,
+    milestones: (coupleId: string) => [...queryKeys.journal.all, coupleId, 'milestones'] as const,
+    memory: (memoryId: string) => [...queryKeys.journal.all, 'memory', memoryId] as const,
   },
 } as const;

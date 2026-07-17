@@ -1,8 +1,14 @@
-// Edge Function: avatar-upload-url (C3b)
-// Returns a short-lived presigned PUT URL for uploading the caller's avatar to
-// Cloudflare R2, plus the eventual public URL. R2 credentials live ONLY here as
-// function secrets — never in the app. The app PUTs the image bytes to the
-// presigned URL, then saves the public URL on its profile.
+/* eslint-disable import/no-unresolved */
+// Edge Function: avatar-upload-url (C3b, generalized for memories 2026-07-04)
+// Returns a short-lived presigned PUT URL for uploading an image to Cloudflare
+// R2, plus the eventual public URL. ONE bucket, two key prefixes (owner
+// decision 2026-07-04):
+//   kind "avatar" (default) → avatars/<userId>/<uuid>.<ext>
+//   kind "memory"           → memories/<coupleId>/<memoryId>/<uuid>.<ext>
+//     (requires body.memoryId; membership is proven by reading the memory row
+//      through the caller's JWT — RLS only returns rows from their couple)
+// R2 credentials live ONLY here as function secrets — never in the app. The app
+// PUTs the image bytes to the presigned URL, then saves the public URL.
 //
 // Required secrets (set with `supabase secrets set ...`, or in the dashboard):
 //   R2_ACCOUNT_ID, R2_BUCKET, R2_PUBLIC_BASE_URL, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY
@@ -34,6 +40,25 @@ Deno.serve(async (req) => {
   const contentType =
     typeof body.contentType === 'string' ? body.contentType : 'image/jpeg';
   const ext = contentType === 'image/png' ? 'png' : 'jpg';
+  const kind = body.kind === 'memory' ? 'memory' : 'avatar';
+
+  // One key per upload; the prefix scopes who may write where.
+  let key: string;
+  if (kind === 'memory') {
+    const memoryId = typeof body.memoryId === 'string' ? body.memoryId : '';
+    if (!memoryId) return json({ error: 'memoryId is required' }, 400);
+    // The caller's JWT-scoped client only sees rows from their own couple
+    // (RLS), so a returned row proves they may attach images to this memory.
+    const { data: memory } = await supabase
+      .from('memories')
+      .select('id, couple_id')
+      .eq('id', memoryId)
+      .maybeSingle();
+    if (!memory) return json({ error: 'Memory not found' }, 404);
+    key = `memories/${memory.couple_id}/${memory.id}/${crypto.randomUUID()}.${ext}`;
+  } else {
+    key = `avatars/${user.id}/${crypto.randomUUID()}.${ext}`;
+  }
 
   const accountId = Deno.env.get('R2_ACCOUNT_ID')!;
   const bucket = Deno.env.get('R2_BUCKET')!;
@@ -41,9 +66,6 @@ Deno.serve(async (req) => {
     /\/$/,
     ''
   );
-
-  // One key per upload, scoped to the user's id.
-  const key = `avatars/${user.id}/${crypto.randomUUID()}.${ext}`;
 
   const r2 = new AwsClient({
     accessKeyId: Deno.env.get('R2_ACCESS_KEY_ID')!,

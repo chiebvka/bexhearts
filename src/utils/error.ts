@@ -49,6 +49,9 @@ export function getErrorMessage(error: unknown): string {
     if (error.message.includes('Cannot link with yourself')) {
       return "You can't link with your own account.";
     }
+    if (error.message.includes('already linked')) {
+      return "You're already linked to a partner. Sign in with a different account to join a new one.";
+    }
   }
   return 'Something went wrong. Please try again.';
 }

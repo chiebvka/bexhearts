@@ -10,6 +10,10 @@ export type CheckIn = Database['public']['Tables']['check_ins']['Row'];
 export type Boundary = Database['public']['Tables']['boundaries']['Row'];
 export type DateIdea = Database['public']['Tables']['date_ideas']['Row'];
 export type CoupleDate = Database['public']['Tables']['couple_dates']['Row'];
+export type Milestone = Database['public']['Tables']['couple_milestones']['Row'];
+export type Memory = Database['public']['Tables']['memories']['Row'];
+export type MemoryImage = Database['public']['Tables']['memory_images']['Row'];
+export type MemoryReaction = Database['public']['Tables']['memory_reactions']['Row'];
 
 // Insert types (for creating data)
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
@@ -19,6 +23,8 @@ export type PrayerInsert = Database['public']['Tables']['prayers']['Insert'];
 export type CheckInInsert = Database['public']['Tables']['check_ins']['Insert'];
 export type BoundaryInsert = Database['public']['Tables']['boundaries']['Insert'];
 export type CoupleDateInsert = Database['public']['Tables']['couple_dates']['Insert'];
+export type MilestoneInsert = Database['public']['Tables']['couple_milestones']['Insert'];
+export type MemoryInsert = Database['public']['Tables']['memories']['Insert'];
 
 // Update types (for patching data)
 export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];

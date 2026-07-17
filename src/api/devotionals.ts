@@ -4,21 +4,18 @@ import { queryKeys } from './keys';
 import { supabase } from '@/services/supabase/client';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
+import { logActivity } from './activity';
 import type { DevotionalProgressInsert } from '@/types/api';
 
 export function useTodayDevotional() {
-  const today = format(new Date(), 'yyyy-MM-dd');
-
   return useQuery({
     queryKey: queryKeys.devotionals.today(),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('devotionals')
-        .select('*')
-        .eq('publish_date', today)
-        .single();
+      // Server-side resolution (00020): a publish_date override wins, else
+      // the evergreen pool rotates — one shared devotional for everyone.
+      const { data, error } = await supabase.rpc('get_today_devotional');
       if (error) throw error;
-      return data;
+      return data?.[0] ?? null;
     },
   });
 }
@@ -82,12 +79,15 @@ export function useCompleteDevotional() {
     mutationFn: async (input: Omit<DevotionalProgressInsert, 'user_id' | 'couple_id'>) => {
       const { data, error } = await supabase
         .from('devotional_progress')
-        .upsert({
-          ...input,
-          user_id: user!.id,
-          couple_id: coupleId!,
-          completed_at: new Date().toISOString(),
-        })
+        .upsert(
+          {
+            ...input,
+            user_id: user!.id,
+            couple_id: coupleId!,
+            completed_at: new Date().toISOString(),
+          },
+          { onConflict: 'devotional_id,user_id' }
+        )
         .select()
         .single();
       if (error) throw error;
@@ -98,6 +98,9 @@ export function useCompleteDevotional() {
         queryKey: queryKeys.devotionals.progress(variables.devotional_id),
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.devotionals.today() });
+      // The streak trigger may have bumped the couple row — refresh it (D6).
+      queryClient.invalidateQueries({ queryKey: queryKeys.couple.mine() });
+      void logActivity('devotional');
     },
   });
 }

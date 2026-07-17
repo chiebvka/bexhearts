@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { isExpoGo } from '@/lib/runtime';
 
 let isConfigured = false;
 
@@ -7,7 +8,8 @@ export async function initSuperwall() {
     ? process.env.EXPO_PUBLIC_SUPERWALL_IOS_KEY!
     : process.env.EXPO_PUBLIC_SUPERWALL_ANDROID_KEY!;
 
-  if (!apiKey || apiKey.startsWith('your-')) {
+  // Native SDK — not present in Expo Go; goes live in the dev build only.
+  if (isExpoGo || !apiKey || apiKey.startsWith('your-')) {
     if (__DEV__) {
       console.warn('Superwall key is not configured; skipping Superwall initialization.');
     }

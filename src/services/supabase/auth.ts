@@ -1,3 +1,4 @@
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { supabase } from './client';
 
 export const authService = {
@@ -78,7 +79,13 @@ export const authService = {
     return supabase.auth.updateUser({ password });
   },
 
-  onAuthStateChange(callback: Parameters<typeof supabase.auth.onAuthStateChange>[0]) {
-    return supabase.auth.onAuthStateChange(callback);
+  // Deliberately typed to take a SYNCHRONOUS callback: supabase-js awaits the
+  // callback's return value while the auth call that fired it (e.g.
+  // signInWithPassword) is still pending, so an async callback would hold the
+  // sign-in spinner hostage to hydration work (see AuthProvider).
+  onAuthStateChange(callback: (event: AuthChangeEvent, session: Session | null) => void) {
+    return supabase.auth.onAuthStateChange(
+      callback as Parameters<typeof supabase.auth.onAuthStateChange>[0]
+    );
   },
 };

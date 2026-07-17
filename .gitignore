@@ -42,3 +42,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# devotional generator output (scripts/gen-devotionals.mjs)
+scripts/drafts.json

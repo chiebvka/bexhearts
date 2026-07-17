@@ -3,11 +3,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { Text, Avatar } from '@/components/ui';
 import { SectionHeader } from '@/components/layout/SectionHeader';
-import { StreakCounter, QuickActions, WaitingForPartnerCard } from '@/features/dashboard';
+import { StreakCounter, QuickActions, WaitingForPartnerCard, getStreakDayState } from '@/features/dashboard';
 import { DevotionalCard } from '@/features/devotional';
 import { useMyProfile } from '@/api/profiles';
-import { useTodayDevotional } from '@/api/devotionals';
+import { useTodayDevotional, useDevotionalProgress } from '@/api/devotionals';
 import { usePartnerProfile } from '@/api/couples';
+import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
 import { getGreeting } from '@/utils/greeting';
 import { colors } from '@/theme/colors';
@@ -16,12 +17,20 @@ import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const userId = useAuthStore((s) => s.user?.id);
   const { data: profile } = useMyProfile();
   const { data: partner } = usePartnerProfile();
   const { data: todayDevotional } = useTodayDevotional();
+  const { data: todayProgress } = useDevotionalProgress(todayDevotional?.id ?? '');
   const isLinked = useCoupleStore((s) => s.isLinked);
 
   const firstName = profile?.full_name?.split(' ')[0] || 'there';
+
+  const dayState = getStreakDayState({
+    isLinked,
+    myDone: !!todayProgress?.some((p) => p.user_id === userId && p.completed_at),
+    partnerDone: !!todayProgress?.some((p) => p.user_id !== userId && p.completed_at),
+  });
 
   return (
     <ScreenContainer style={{ paddingTop: insets.top + spacing.md }}>
@@ -46,7 +55,7 @@ export default function HomeScreen() {
 
       {!isLinked && <WaitingForPartnerCard />}
 
-      <StreakCounter />
+      <StreakCounter dayState={dayState} partnerName={partner?.full_name} />
 
       <QuickActions />
 

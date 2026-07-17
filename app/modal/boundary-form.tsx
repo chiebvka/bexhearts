@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { KeyboardAvoid } from '@/components/layout/KeyboardAvoid';
-import { Text, PremiumGate } from '@/components/ui';
+import { Text, PremiumGate, ModalHeader } from '@/components/ui';
 import { BoundaryForm } from '@/features/boundaries';
 import { PAYWALL_EVENTS } from '@/constants/entitlements';
 import { colors } from '@/theme/colors';
@@ -19,6 +19,7 @@ export default function BoundaryFormModal() {
   return (
     <KeyboardAvoid>
       <ScreenContainer style={{ paddingTop: insets.top + spacing.md }}>
+        <ModalHeader />
         <PremiumGate paywallEvent={PAYWALL_EVENTS.BOUNDARIES_GATE}>
           <View style={styles.tabs}>
             <Pressable
@@ -45,7 +46,9 @@ export default function BoundaryFormModal() {
             </Pressable>
           </View>
 
-          <BoundaryForm type={type} onSuccess={() => router.back()} />
+          {/* key resets template/category/field state when switching registers —
+              the two forms ask different questions, so carrying text over misleads */}
+          <BoundaryForm key={type} type={type} onSuccess={() => router.back()} />
         </PremiumGate>
       </ScreenContainer>
     </KeyboardAvoid>

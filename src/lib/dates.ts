@@ -21,8 +21,20 @@ export function getWeekOf(date: Date = new Date()): string {
   return format(startOfWeek(date, { weekStartsOn: 0 }), 'yyyy-MM-dd');
 }
 
+// IANA timezone of the current device (e.g. 'America/New_York'); falls back to
+// UTC if the platform doesn't expose it. Used to anchor a couple's streak day.
+export function getDeviceTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    return 'UTC';
+  }
+}
+
 export function getStreakMessage(count: number): string {
-  if (count === 0) return 'Start your streak today!';
+  // The couple streak anchors on BOTH partners finishing the daily devotional
+  // (D6) — say so, or a zero next to filled activity dots reads as a bug.
+  if (count === 0) return "Both finish today's devotional to light the flame";
   if (count === 1) return '1 day streak - great start!';
   if (count < 7) return `${count} day streak - keep going!`;
   if (count < 30) return `${count} day streak - amazing!`;

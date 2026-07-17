@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import { withUniqueInviteCode } from '@/utils/invite-code';
+import { getDeviceTimeZone } from '@/lib/dates';
 import type { Profile, Couple, CoupleInsert, ProfileUpdate } from '@/types/api';
 
 export async function getProfile(userId: string): Promise<Profile | null> {
@@ -81,6 +82,8 @@ export async function createCouple(
         invite_code_expires_at: expiresAt.toISOString(),
         relationship_stage: options?.relationship_stage ?? null,
         stage_started_on: options?.stage_started_on ?? null,
+        // Anchor the streak's "day" to the creator's timezone (D6).
+        timezone: getDeviceTimeZone(),
       })
       .select()
       .single()

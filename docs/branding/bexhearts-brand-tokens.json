@@ -1,0 +1,609 @@
+{
+  "metadata": {
+    "name": "Bexhearts brand-context token package",
+    "generated_on": "2026-07-13",
+    "inspected_branch": "authflow",
+    "app_version": "1.0.0",
+    "palette_authority": "Active Bexhearts code takes precedence over documentation and Bexoni.com.",
+    "implementation_status": "pre_launch_light_only",
+    "status_definitions": {
+      "verified_from_code": "Exact value or behavior is present in active local application code.",
+      "verified_from_asset": "Dimensions, format, or visual status was verified from the local asset itself.",
+      "documented_not_implemented": "Exact target is written in project documentation but is not wired into the active theme.",
+      "inferred": "Conclusion follows from multiple inspected sources but is not an explicit token.",
+      "recommended": "Proposed design-handoff value or use; not an active implementation fact."
+    },
+    "secret_safety": "No environment-variable values or private credentials are included."
+  },
+  "source_of_truth_files": [
+    "src/theme/colors.ts",
+    "src/theme/typography.ts",
+    "src/theme/spacing.ts",
+    "src/theme/borderRadius.ts",
+    "src/theme/shadows.ts",
+    "src/components/ui/Button.tsx",
+    "src/components/ui/Card.tsx",
+    "src/components/ui/Input.tsx",
+    "src/components/ui/Text.tsx",
+    "src/components/ui/Badge.tsx",
+    "app/_layout.tsx",
+    "app/(tabs)/_layout.tsx",
+    "app/(onboarding)/welcome.tsx",
+    "app.config.ts",
+    "docs/PROGRESS.md"
+  ],
+  "light_mode": {
+    "implementation_status": "active",
+    "tokens": {
+      "primary": {
+        "hex": "#9849FA",
+        "rgb": [152, 73, 250],
+        "usage": "Primary actions, links, selected tabs, filled icons, focus borders, and core brand mark.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.primary[500]",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "primary_foreground": {
+        "hex": "#FAFAF8",
+        "rgb": [250, 250, 248],
+        "usage": "Text and icons placed on primary, secondary, and danger buttons.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.text.inverse",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "secondary": {
+        "hex": "#D4963A",
+        "rgb": [212, 150, 58],
+        "usage": "Warm supporting action color, including secondary buttons.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.secondary[500]",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "accent": {
+        "hex": "#5A8A6A",
+        "rgb": [90, 138, 106],
+        "usage": "Answered-prayer, success-adjacent, date-rating, and relational growth accents.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.accent[500]",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "app_background": {
+        "hex": "#F8F4EC",
+        "rgb": [248, 244, 236],
+        "usage": "Root canvas, stacks, screens, and scroll containers.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.background",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "elevated_surface": {
+        "hex": "#FFFFFF",
+        "rgb": [255, 255, 255],
+        "usage": "Welcome polaroid frames and high-elevation white accents.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.surfaceElevated",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "card_surface": {
+        "hex": "#FEFCF7",
+        "rgb": [254, 252, 247],
+        "usage": "Cards, tab bar, and the active text-input fill.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.surface",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "primary_text": {
+        "hex": "#1A1A17",
+        "rgb": [26, 26, 23],
+        "usage": "Default body text and strong headings.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.text.primary",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "muted_text": {
+        "hex": "#5C5C54",
+        "rgb": [92, 92, 84],
+        "usage": "Secondary copy, descriptions, and supporting labels.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.text.secondary",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "tertiary_text": {
+        "hex": "#A8A89E",
+        "rgb": [168, 168, 158],
+        "usage": "Placeholders, timestamps, inactive navigation, and quiet metadata.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.text.tertiary",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "border_divider": {
+        "hex": "#E8E8E2",
+        "rgb": [232, 232, 226],
+        "usage": "Outlined cards, tab bar top edge, and row dividers.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.neutral[200]",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "input_border": {
+        "hex": "#D4D4CC",
+        "rgb": [212, 212, 204],
+        "usage": "Text inputs, inactive chips, and unselected plan cards.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.neutral[300]",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "input_background": {
+        "hex": "#FEFCF7",
+        "rgb": [254, 252, 247],
+        "usage": "Text-input fill.",
+        "source": "src/components/ui/Input.tsx",
+        "symbol": "styles.input.backgroundColor = colors.surface",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "success": {
+        "hex": "#4A8A5A",
+        "rgb": [74, 138, 90],
+        "usage": "Success semantic text and badge content.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.success",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "warning": {
+        "hex": "#D49A3A",
+        "rgb": [212, 154, 58],
+        "usage": "Warning semantic text and badge content.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.warning",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "error": {
+        "hex": "#C05252",
+        "rgb": [192, 82, 82],
+        "usage": "Errors, destructive actions, and danger buttons.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.error",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "info": {
+        "hex": "#5A7A9A",
+        "rgb": [90, 122, 154],
+        "usage": "Defined info semantic with limited direct UI use.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.info",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "decorative_tint": {
+        "hex": "#EEE7FF",
+        "rgb": [238, 231, 255],
+        "usage": "Selected-tab halo, Journal icon rail, grace chip, and circular feature accents.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.primary[100]",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "decorative_wash": {
+        "hex": "#F6F3FE",
+        "rgb": [246, 243, 254],
+        "usage": "Very light selected-card and paywall surfaces.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.primary[50]",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "success_tint": {
+        "hex": "#E8F5E9",
+        "rgb": [232, 245, 233],
+        "usage": "Success badge background.",
+        "source": "src/components/ui/Badge.tsx",
+        "symbol": "variantStyles.success.bg",
+        "status": "verified_from_code",
+        "confidence": "high"
+      },
+      "warning_tint": {
+        "hex": "#FFF8E1",
+        "rgb": [255, 248, 225],
+        "usage": "Warning badge background.",
+        "source": "src/components/ui/Badge.tsx",
+        "symbol": "variantStyles.warning.bg",
+        "status": "verified_from_code",
+        "confidence": "high"
+      }
+    }
+  },
+  "dark_mode": {
+    "implementation_status": "documented_target_not_active",
+    "implementation_note": "The app is forced to light mode. Only the values marked documented_not_implemented are explicit Phase 8 targets; recommended rows fill missing roles for logo testing and must be contrast-validated during implementation.",
+    "tokens": {
+      "primary": {
+        "hex": "#9849FA",
+        "rgb": [152, 73, 250],
+        "usage": "Intended dark-mode brand action and symbol color.",
+        "source": "docs/PROGRESS.md",
+        "symbol": "Phase 8 primary stays the same in both modes",
+        "status": "documented_not_implemented",
+        "confidence": "high"
+      },
+      "primary_foreground": {
+        "hex": "#FAFAFA",
+        "rgb": [250, 250, 250],
+        "usage": "Intended text and icons on primary and as main dark-mode text.",
+        "source": "docs/PROGRESS.md",
+        "symbol": "Phase 8 text near-white",
+        "status": "documented_not_implemented",
+        "confidence": "medium"
+      },
+      "secondary": {
+        "hex": "#D4963A",
+        "rgb": [212, 150, 58],
+        "usage": "Proposed reuse of the supporting gold.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.secondary[500] reused for proposed dark mapping",
+        "status": "recommended",
+        "confidence": "medium"
+      },
+      "accent": {
+        "hex": "#5A8A6A",
+        "rgb": [90, 138, 106],
+        "usage": "Proposed reuse of the supporting green.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.accent[500] reused for proposed dark mapping",
+        "status": "recommended",
+        "confidence": "medium"
+      },
+      "app_background": {
+        "hex": "#13161A",
+        "rgb": [19, 22, 26],
+        "usage": "Future root dark canvas.",
+        "source": "docs/PROGRESS.md",
+        "symbol": "Phase 8 dark background",
+        "status": "documented_not_implemented",
+        "confidence": "high"
+      },
+      "card_surface": {
+        "hex": "#171B20",
+        "rgb": [23, 27, 32],
+        "usage": "Future dark card surface.",
+        "source": "docs/PROGRESS.md",
+        "symbol": "Phase 8 dark card",
+        "status": "documented_not_implemented",
+        "confidence": "high"
+      },
+      "elevated_surface": {
+        "hex": "#1F2329",
+        "rgb": [31, 35, 41],
+        "usage": "Future dark accent/elevated surface.",
+        "source": "docs/PROGRESS.md",
+        "symbol": "Phase 8 dark accent surface",
+        "status": "documented_not_implemented",
+        "confidence": "high"
+      },
+      "primary_text": {
+        "hex": "#FAFAFA",
+        "rgb": [250, 250, 250],
+        "usage": "Future main dark-mode text.",
+        "source": "docs/PROGRESS.md",
+        "symbol": "Phase 8 dark text near-white",
+        "status": "documented_not_implemented",
+        "confidence": "high"
+      },
+      "muted_text": {
+        "hex": "#8B9098",
+        "rgb": [139, 144, 152],
+        "usage": "Future dark secondary text.",
+        "source": "docs/PROGRESS.md",
+        "symbol": "Phase 8 dark muted text",
+        "status": "documented_not_implemented",
+        "confidence": "high"
+      },
+      "border_divider": {
+        "hex": "#2A2E35",
+        "rgb": [42, 46, 53],
+        "usage": "Future dark borders and separators.",
+        "source": "docs/PROGRESS.md",
+        "symbol": "Phase 8 dark border",
+        "status": "documented_not_implemented",
+        "confidence": "high"
+      },
+      "input_background": {
+        "hex": "#1F2329",
+        "rgb": [31, 35, 41],
+        "usage": "Proposed input fill using the documented elevated surface.",
+        "source": "docs/PROGRESS.md",
+        "symbol": "Recommended mapping from Phase 8 accent surface",
+        "status": "recommended",
+        "confidence": "medium"
+      },
+      "success": {
+        "hex": "#4A8A5A",
+        "rgb": [74, 138, 90],
+        "usage": "Proposed reuse of the active success semantic.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.success reused for proposed dark mapping",
+        "status": "recommended",
+        "confidence": "medium"
+      },
+      "warning": {
+        "hex": "#D49A3A",
+        "rgb": [212, 154, 58],
+        "usage": "Proposed reuse of the active warning semantic.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.warning reused for proposed dark mapping",
+        "status": "recommended",
+        "confidence": "medium"
+      },
+      "error": {
+        "hex": "#C05252",
+        "rgb": [192, 82, 82],
+        "usage": "Proposed reuse of the active error semantic.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.error reused for proposed dark mapping",
+        "status": "recommended",
+        "confidence": "medium"
+      },
+      "decorative_tint": {
+        "hex": "#29104A",
+        "rgb": [41, 16, 74],
+        "usage": "Proposed quiet purple halo for dark selection fields.",
+        "source": "src/theme/colors.ts",
+        "symbol": "colors.primary[900] proposed for dark decorative use",
+        "status": "recommended",
+        "confidence": "medium"
+      }
+    }
+  },
+  "palette_conflicts": [
+    {
+      "topic": "light_primary_text",
+      "active": "#1A1A17",
+      "conflicting_documented_target": "#141517",
+      "resolution": "Use the active code value for current-brand work; treat #141517 as an unapplied Phase 8 target.",
+      "status": "verified_from_code"
+    },
+    {
+      "topic": "light_border",
+      "active": ["#E8E8E2", "#D4D4CC"],
+      "conflicting_documented_target": "#DAD7D0",
+      "resolution": "Use #E8E8E2 for active card/divider references and #D4D4CC for active input/control borders.",
+      "status": "verified_from_code"
+    },
+    {
+      "topic": "active_tab_tint",
+      "active": "#EEE7FF",
+      "conflicting_documented_prose": "#F1E7FE",
+      "resolution": "The tab code resolves colors.primary[100], so #EEE7FF is authoritative.",
+      "status": "verified_from_code"
+    },
+    {
+      "topic": "splash_background",
+      "active_app_canvas": "#F8F4EC",
+      "configured_placeholder_asset_background": "#FAFAF8",
+      "resolution": "Treat #FAFAF8 as current launch-asset configuration, not the semantic app background.",
+      "status": "verified_from_code"
+    }
+  ],
+  "typography": {
+    "sans": {
+      "ios": "Avenir Next",
+      "android": "sans-serif",
+      "roles": ["headlines", "body", "labels", "buttons", "navigation"],
+      "source": "src/theme/typography.ts",
+      "status": "verified_from_code"
+    },
+    "serif": {
+      "ios": "Georgia",
+      "android": "serif",
+      "roles": ["display headings", "scripture", "temporary welcome wordmark"],
+      "source": "src/theme/typography.ts",
+      "status": "verified_from_code"
+    },
+    "custom_font_assets": {
+      "files": [],
+      "source": "assets/fonts/",
+      "status": "verified_from_asset"
+    },
+    "logo_wordmark_direction": {
+      "recommendation": "Upright custom humanist sans, medium-to-bold, with calm spacing; optionally one restrained serif/editorial detail. Avoid script and Bexoni's oblique construction.",
+      "status": "recommended"
+    }
+  },
+  "spacing_summary": {
+    "scale_px": {
+      "xs": 4,
+      "sm": 8,
+      "md": 16,
+      "lg": 24,
+      "xl": 32,
+      "2xl": 48,
+      "3xl": 64
+    },
+    "source": "src/theme/spacing.ts",
+    "status": "verified_from_code",
+    "interpretation": "Compact 4/8 foundation with generous 16–24px component padding and 32–64px section breathing room."
+  },
+  "radius_summary": {
+    "scale_px": {
+      "none": 0,
+      "sm": 8,
+      "md": 12,
+      "lg": 16,
+      "xl": 24,
+      "full": 9999
+    },
+    "active_convention": "Buttons and text inputs are square by default; cards are commonly 16px; avatars and badges are circular/pill.",
+    "source": "src/theme/borderRadius.ts",
+    "status": "verified_from_code"
+  },
+  "shadow_summary": {
+    "levels": ["sm", "md", "lg"],
+    "shadow_color": "#1A1A17",
+    "opacity_range": [0.05, 0.12],
+    "source": "src/theme/shadows.ts",
+    "status": "verified_from_code",
+    "interpretation": "Low-opacity, warm-black elevation; logo must not depend on shadows."
+  },
+  "gradient_summary": {
+    "active_gradients": [],
+    "source": "Repository search and package configuration",
+    "status": "verified_from_code",
+    "recommendation": "Design the core identity as flat solid color first. Any future gradient is a campaign treatment, not a structural logo requirement."
+  },
+  "active_assets": [
+    {
+      "path": "assets/icon.png",
+      "format": "PNG",
+      "dimensions_px": [1024, 1024],
+      "purpose": "Configured app and notification icon",
+      "visual_status": "default Expo grid/target placeholder",
+      "current_or_obsolete": "temporary",
+      "should_influence_future_logo": false,
+      "status": "verified_from_asset"
+    },
+    {
+      "path": "assets/adaptive-icon.png",
+      "format": "PNG",
+      "dimensions_px": [1024, 1024],
+      "purpose": "Configured Android adaptive foreground",
+      "visual_status": "default transparent Expo grid/target placeholder",
+      "current_or_obsolete": "temporary",
+      "should_influence_future_logo": false,
+      "status": "verified_from_asset"
+    },
+    {
+      "path": "assets/splash-icon.png",
+      "format": "PNG",
+      "dimensions_px": [1024, 1024],
+      "purpose": "Configured splash mark",
+      "visual_status": "default transparent Expo grid/target placeholder; byte-identical to adaptive-icon.png",
+      "current_or_obsolete": "temporary",
+      "should_influence_future_logo": false,
+      "status": "verified_from_asset"
+    },
+    {
+      "path": "assets/favicon.png",
+      "format": "PNG",
+      "dimensions_px": [48, 48],
+      "purpose": "Configured web favicon",
+      "visual_status": "default Expo cube/dot placeholder",
+      "current_or_obsolete": "temporary",
+      "should_influence_future_logo": false,
+      "status": "verified_from_asset"
+    }
+  ],
+  "implementation_confidence": {
+    "active_light_palette": "high",
+    "typography_geometry_spacing": "high",
+    "asset_inventory": "high",
+    "dark_mode_exact_roles": "medium_to_low_because_not_implemented",
+    "external_service_release_state": "uncertain",
+    "final_logo_originality_or_trademark_clearance": "not_assessed"
+  },
+  "recommended_logo_palette": {
+    "primary_symbol": {
+      "hex": "#9849FA",
+      "status": "recommended",
+      "basis": "verified_from_code"
+    },
+    "light_canvas": {
+      "hex": "#F8F4EC",
+      "status": "recommended",
+      "basis": "verified_from_code"
+    },
+    "light_wordmark": {
+      "hex": "#1A1A17",
+      "status": "recommended",
+      "basis": "verified_from_code"
+    },
+    "dark_canvas": {
+      "hex": "#13161A",
+      "status": "recommended",
+      "basis": "documented_not_implemented"
+    },
+    "dark_wordmark": {
+      "hex": "#FAFAFA",
+      "status": "recommended",
+      "basis": "documented_not_implemented"
+    },
+    "optional_warm_support": {
+      "hex": "#D4963A",
+      "status": "recommended",
+      "basis": "verified_from_code"
+    },
+    "optional_growth_support": {
+      "hex": "#5A8A6A",
+      "status": "recommended",
+      "basis": "verified_from_code"
+    },
+    "rule": "The symbol must succeed in one color before any two-color or gradient treatment."
+  },
+  "inherited_bexoni_characteristics": {
+    "observed": [
+      "Vivid purple ecosystem anchor",
+      "Warm light and near-black dark presentation",
+      "Confident simple geometry",
+      "High-contrast neutral typography",
+      "Modern soft-tech restraint"
+    ],
+    "source": "https://www.bexoni.com",
+    "status": "inferred"
+  },
+  "proposed_bexhearts_specific_adaptations": {
+    "adaptations": [
+      "Softer and more human proportions than Bexoni's faceted technology mark",
+      "Connection, shared rhythm, safe space, reflection, or guiding-light symbolism",
+      "A secondary and discoverable faith cue rather than a literal ministry symbol",
+      "Balanced gender expression and upright wordmark",
+      "Broader negative spaces and a square-safe app-icon silhouette",
+      "No copy of Bexoni's faceted B slab, offset outline, or oblique wordmark"
+    ],
+    "status": "recommended"
+  },
+  "feature_state_summary": {
+    "implemented_visible": [
+      "Onboarding and partner invite/link UI",
+      "Daily devotionals and partner reflection reveal",
+      "Shared/personal prayers and prayer-focus sessions",
+      "Weekly check-ins and partner comparison",
+      "Boundaries and temptation plans",
+      "Date planning, custom dates, completion, and ratings",
+      "Journal Moments, Milestones, multi-photo memories, and reactions",
+      "Shared streak, Us hub, points history, and leaderboard",
+      "Profile, legal/support, restore-purchase entry, and trial paywall UI"
+    ],
+    "implemented_incomplete_or_conditional": [
+      "External social-auth verification",
+      "Owner-applied migrations and two-user live-database certification",
+      "External photo-upload deployment configuration",
+      "Real store products and entitlement enforcement",
+      "Push sending and notification preferences",
+      "Content filtering from onboarding personalization",
+      "Appearance preference without an active dark theme"
+    ],
+    "planned_not_released": [
+      "Daily question reveal",
+      "Daily mood share",
+      "Praying-for-you push",
+      "Couple challenges",
+      "Home-screen widget",
+      "In-app Bible reader",
+      "Long-distance and unlink flows",
+      "Full dark theme and real identity assets"
+    ],
+    "status": "inferred"
+  }
+}

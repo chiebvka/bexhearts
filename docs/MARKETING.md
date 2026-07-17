@@ -11,7 +11,7 @@
 >
 > **North-star metric:** *weekly-active linked couples.* (A linked, active couple is the unit that retains and converts — not raw installs.)
 >
-> **👉 Current position:** _Pre-launch. M0 not started._ Update as we advance.
+> **👉 Current position (2026-07-10):** _Pre-launch, M1/M2 in motion._ TikTok account #1 (Faith & Intentional Love theme) is live with 3 posts (~2.7k views, ~150 likes — healthy for a cold account; judge by saves/profile visits, not views). FB + IG accounts starting soon (cross-post the same slideshows). The Codex handoff workbook (`/Users/Ebuka/Documents/VPS-agents/codex-bexhearts-marketing-handoff-2026-06-29/`) holds the first 40 posts (4 theme accounts × 10, Claude Code vs Codex labeled) + the Conversion Tracker. **Approved 2026-07-10 (owner): the 2-month production run — see §2.10.** First wave stays **waitlist-CTA** (store publish realistically ~2 weeks out; flip to download wording at launch). **UPDATE 2026-07-12: the waitlist page EXISTS** — the landing site (`/Users/Ebuka/Projects/bexheartslandingcodex` → **bexhearts.com**, owner-purchased domain) has a Supabase-backed waitlist form w/ UTM capture, a per-couple pricing section, FAQ + FAQPage/SoftwareApplication structured data, full privacy/terms pages mirrored from the legal drafts, a **12-post SEO blog** (8 articles adapted from our content angles), and an expanded `llms.txt` for AI-search discoverability. L2/L3 CTAs unblock once the owner deploys it + points DNS. Link-in-bio should use per-platform UTM params so the Conversion Tracker's link-click column works.
 
 ---
 
@@ -106,10 +106,12 @@
 6. **Compounding system** — keep every winner's pattern; let the library make the next post easier and smarter.
 7. **Human gate on the things that matter** — proposals and posting rules get reviewed before they bake in; automate production, not judgment.
 8. **Faceless & multi-account scalable** — but warm new accounts by hand; automate only aged ones.
-9. **Monetization model = free trial → hard paywall (no freemium), billing per-COUPLE** (locked 2026-06-17). The invited partner inherits the subscription — never a second paywall. The trial unlocks everything, so content should sell the *during-trial* "aha" (invite partner → first devotional together) that converts trial → paid. Solo is a *state, not a segment* — we never market to singles.
+9. **Monetization model = free trial → hard paywall (no freemium), billing per-COUPLE** (locked 2026-06-17). The invited partner inherits the subscription — never a second paywall. The trial unlocks everything, so content should sell the *during-trial* "aha" (invite partner → first devotional together) that converts trial → paid. Solo is a *state, not a segment* — we never market to singles. **Launch pricing (locked 2026-07-10, weekly added 2026-07-11): $79.99/yr + $12.99/mo + $6.99/wk — all three at launch, 3-day trial on each.** The per-couple framing is a content angle in itself ("one subscription, both of you").
 
 ## 2.2 Feature → content-angle map
 > Update this table whenever features change in `PROGRESS.md`. Each angle is a content seed; pair with a hook from §2.4.
+>
+> **What's actually LIVE (2026-07-10) — content may show these as real:** daily devotionals (communal "today's devotional"), shared + personal prayers, **AI-composed prayer focus sessions**, weekly check-ins w/ partner comparison, boundaries & temptation plans, the **350-idea date library w/ couple ratings**, **Journal (Moments + Milestones/countdowns, multi-photo memories, reactions)**, streaks + **Us hub heatmap**, points + leaderboard, partner linking. **NOT yet built — waitlist/soon wording only:** daily question, daily mood, praying-for-you push, couple challenges, home-screen widget. *(This supersedes the stale "do not advertise" list in the 2026-06-29 Codex handoff's CONTENT_NOTES.md — milestones, memories timeline, and prayer sessions have shipped since it was written.)*
 
 | Feature | Content angles |
 |---|---|
@@ -117,7 +119,7 @@
 | Daily question (reveal) | "We answer the same question separately, then reveal — last night's wrecked me" · "The question that made us cry at 11pm" |
 | Prayer journal | "We write our prayers down and check them off when God answers" · "6 months of answered prayers, swipe →" |
 | Weekly check-in | "Our Sunday-night relationship check-in ritual" · "We rate our week 1–5 and talk about it" |
-| Boundaries | "Boundaries we set as a Christian couple that saved us" · "Christian dating boundaries nobody talks about" |
+| Boundaries | "Boundaries we set as a Christian couple that saved us" · "Christian dating boundaries nobody talks about" — **UGC/acquisition engine: the in-app category taxonomy (purity/digital/friendships/…) doubles as a content calendar; each boundary template = one carousel/Reel w/ its scripture tie. UPDATE 2026-07-10: the template library v1 SHIPPED — 18 stage-aware boundary templates in `src/features/boundaries/templates.ts` are ready-made content seeds ("Holiday plans are decided by us first", "Purchases over $100 get a quick chat"…).** *(Temptation plans are deliberately NOT an ad unit — private/shame-laden; they're the depth/retention + testimonial engine instead. Product decision 2026-06-29.)* |
 | Date ideas | "Christian date ideas that aren't just 'go to church'" · "$0 dates with a scripture tie" |
 | Streak | "Day 90 of a devotional together 🔥" · "What a 100-day couple streak did for us" |
 | Daily mood | "He sees my mood every morning and prays for me" |
@@ -178,6 +180,16 @@ Organize by category; build 3 variants per concept to test.
 - **Content:** posts/week, views, **saves**, profile visits, **link-in-bio clicks**, follower growth, per-hook thumb-stop/completion.
 - **Funnel:** install → **couple linked** (activation) → trial → paid.
 - **North star:** **weekly-active linked couples.**
+
+## 2.10 The 2-month slideshow production run (approved by owner 2026-07-10)
+- **Scope:** 60 posts per theme account × 4 accounts (Faith & Intentional Love · Couple Activities · Journal & Quotes · Relationship Reflections) = 240 posts, same workbook format as the 2026-06-29 handoff (per-slide copy + visual direction + Canva search terms + captions/hashtags + CTA level).
+- **✅ WAVE 1 DELIVERED (2026-07-12):** `bexhearts_content_wave1_claude.xlsx` in the handoff folder — 60 posts (Days 11–25, 15/account), Creator Source "Claude Code", 9/4/2 CTA mix per account, all L2/L3 waitlist-worded, Slide Copy (347 slide rows) + pre-filled Conversion Tracker rows. Leans on the newly-live features (Journal, AI prayer sessions, streak grace, rated date library, check-in reveal) the first 40 posts couldn't use. CONTENT_NOTES.md updated (stale don't-advertise list superseded).
+- **Waves, not a blob:** delivered in **2-week waves of 15/account (60 posts/wave, 4 waves)**. Each wave folds in Conversion Tracker learnings from the last (the M4 pattern-library principle) — a pre-written 60-day monolith can't react to what performs.
+- **Cross-post, don't triple-create:** the same post serves TikTok + IG + FB. Export both 1080×1920 (TikTok/Reels/Stories) and **4:5 1080×1350 for IG feed carousels**. Hook + CTA text still typed natively per platform (§2.3).
+- **CTA mix per wave:** ~60% L1 (value-only) / ~25% L2 (soft bridge) / ~15% L3 (direct). **Wave 1 = waitlist wording** (app not publicly downloadable yet); flip L2/L3 wording to download at store launch, per the handoff's launch-status rule.
+- **Claude vs Codex comparison stays on:** keep Creator labels, extend the tracker. Fair-test rules: interleave creators in the schedule (same time slots, alternating), judge on **save rate + link CTR** after ≥72h live, never on views alone.
+- **Anti-repeat:** no angle reused within 14 days on an account (M4 rule); rotate through the §2.2 live-feature list — the newly shipped features (Journal/Moments, AI prayer sessions, streak heatmap, rated date library) are fresh angle territory the first 40 posts couldn't use.
+- New accounts (<2 wks) post manually per §2.3; keep the warm-up gentle on the new FB/IG accounts.
 
 ---
 

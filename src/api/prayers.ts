@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from './keys';
 import { supabase } from '@/services/supabase/client';
+import { subscribeToPrayers } from '@/services/supabase/realtime';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
 import type { PrayerInsert, PrayerUpdate } from '@/types/api';
@@ -24,13 +26,82 @@ export function usePrayers() {
   });
 }
 
+// D2·M2 — live sync: when either partner adds/answers/archives a prayer, the
+// other device refetches. Subscribes for the current couple and tears the
+// channel down on unmount / couple change.
+export function usePrayersRealtime() {
+  const queryClient = useQueryClient();
+  const coupleId = useCoupleStore((s) => s.coupleId);
+
+  useEffect(() => {
+    if (!coupleId) return;
+    const channel = subscribeToPrayers(coupleId, () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.prayers.byCoupleId(coupleId),
+      });
+    });
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [coupleId, queryClient]);
+}
+
+// Compose (or fetch the cached) AI prayer + verse for a prayer via the
+// compose-prayer edge function (Claude Haiku; key lives server-side only).
+export function useComposePrayer() {
+  const queryClient = useQueryClient();
+  const coupleId = useCoupleStore((s) => s.coupleId);
+
+  return useMutation({
+    mutationFn: async (
+      prayerId: string
+    ): Promise<{
+      prayer?: string;
+      verseRef?: string;
+      verseText?: string | null;
+      flagged?: boolean;
+      unsuitable?: boolean;
+    }> => {
+      const { data, error } = await supabase.functions.invoke('compose-prayer', {
+        body: { prayerId },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      // The composed prayer is cached on the row — refresh the list.
+      queryClient.invalidateQueries({ queryKey: queryKeys.prayers.byCoupleId(coupleId!) });
+    },
+  });
+}
+
+// One-time consent before any prayer text is sent to the AI service
+// (sensitive religious data — stamped on the profile, enforced server-side).
+export function useGrantAiPrayerConsent() {
+  const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ ai_prayer_consent_at: new Date().toISOString() })
+        .eq('id', user!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.mine() });
+    },
+  });
+}
+
 export function useCreatePrayer() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const coupleId = useCoupleStore((s) => s.coupleId);
 
   return useMutation({
-    mutationFn: async (input: Pick<PrayerInsert, 'title' | 'body'>) => {
+    mutationFn: async (input: Pick<PrayerInsert, 'title' | 'body' | 'is_private'>) => {
       const { data, error } = await supabase
         .from('prayers')
         .insert({

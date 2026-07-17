@@ -1,31 +1,68 @@
-import { useState } from 'react';
-import { View, FlatList, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View, FlatList, SectionList, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text, LoadingScreen, EmptyState } from '@/components/ui';
-import { DateIdeaCard } from '@/features/dates';
-import { useDateIdeas } from '@/api/dates';
+import { Text, Button, LoadingScreen, EmptyState } from '@/components/ui';
+import { DateIdeaCard, CoupleDateCard, partitionCoupleDates } from '@/features/dates';
+import {
+  useDateIdeas,
+  useCoupleDates,
+  useRemoveCoupleDate,
+  useDateIdeaAggregates,
+} from '@/api/dates';
 import { DATE_CATEGORIES } from '@/constants/devotional';
+import { lightHaptic } from '@/lib/haptics';
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { borderRadius } from '@/theme/borderRadius';
 
+type Tab = 'ideas' | 'ours';
+
 export default function DatesScreen() {
   const insets = useSafeAreaInsets();
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
-  const { data: ideas, isLoading } = useDateIdeas(selectedCategory);
-
-  if (isLoading) return <LoadingScreen />;
+  const [tab, setTab] = useState<Tab>('ideas');
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
       <Text variant="headlineLarge" style={styles.title}>
-        Date Ideas
+        Dates
       </Text>
 
+      <View style={styles.segmented}>
+        {(['ideas', 'ours'] as const).map((t) => (
+          <Pressable
+            key={t}
+            onPress={() => setTab(t)}
+            style={[styles.segment, tab === t && styles.segmentActive]}
+          >
+            <Text
+              variant="labelLarge"
+              color={tab === t ? colors.text.inverse : colors.text.secondary}
+            >
+              {t === 'ideas' ? 'Ideas' : 'Our Dates'}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {tab === 'ideas' ? <IdeasTab /> : <OurDatesTab />}
+    </View>
+  );
+}
+
+function IdeasTab() {
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
+  const { data: ideas, isLoading } = useDateIdeas(selectedCategory);
+  const { data: aggregates } = useDateIdeaAggregates();
+
+  if (isLoading) return <LoadingScreen />;
+
+  return (
+    <>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.filtersScroll}
         contentContainerStyle={styles.filters}
       >
         <Pressable
@@ -61,6 +98,7 @@ export default function DatesScreen() {
         renderItem={({ item }) => (
           <DateIdeaCard
             idea={item}
+            aggregate={aggregates?.get(item.id)}
             onPress={() => router.push(`/(tabs)/dates/${item.id}`)}
           />
         )}
@@ -69,7 +107,71 @@ export default function DatesScreen() {
           <EmptyState title="No date ideas found" description="Try a different category." />
         }
       />
-    </View>
+    </>
+  );
+}
+
+function OurDatesTab() {
+  const { data: dates, isLoading } = useCoupleDates();
+  const removeDate = useRemoveCoupleDate();
+
+  const sections = useMemo(() => {
+    const { planned, saved, completed } = partitionCoupleDates(dates);
+    return [
+      { key: 'planned', title: 'Planned', data: planned },
+      { key: 'saved', title: 'Saved', data: saved },
+      { key: 'completed', title: 'Memories', data: completed },
+    ].filter((s) => s.data.length > 0);
+  }, [dates]);
+
+  if (isLoading) return <LoadingScreen />;
+
+  return (
+    <>
+      <View style={styles.createRow}>
+        <Button
+          title="+ Create your own"
+          onPress={() => router.push('/modal/date-form')}
+          variant="secondary"
+          size="sm"
+          fullWidth
+        />
+      </View>
+
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.id}
+        stickySectionHeadersEnabled={false}
+        renderSectionHeader={({ section }) => (
+          <Text
+            variant="labelMedium"
+            color={colors.text.tertiary}
+            style={styles.sectionHeader}
+          >
+            {section.title}
+          </Text>
+        )}
+        renderItem={({ item }) => (
+          <CoupleDateCard
+            coupleDate={item}
+            onComplete={() => router.push(`/modal/date-complete?id=${item.id}`)}
+            onRemove={() => {
+              lightHaptic();
+              removeDate.mutate(item.id);
+            }}
+          />
+        )}
+        contentContainerStyle={styles.list}
+        ListEmptyComponent={
+          <EmptyState
+            title="No dates yet"
+            description="Save an idea or create your own to start planning."
+            actionLabel="Create your own"
+            onAction={() => router.push('/modal/date-form')}
+          />
+        }
+      />
+    </>
   );
 }
 
@@ -82,10 +184,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     marginBottom: spacing.md,
   },
+  segmented: {
+    flexDirection: 'row',
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    backgroundColor: colors.neutral[100],
+    borderRadius: borderRadius.md,
+    padding: spacing.xs,
+  },
+  segment: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.sm,
+    alignItems: 'center',
+  },
+  segmentActive: {
+    backgroundColor: colors.primary[500],
+  },
+  // Fixed height: flexGrow: 0 alone lets the scroller hug the chips so tightly
+  // that descenders clip (owner report 2026-07-05); a set height gives the row
+  // room in every filter state.
+  filtersScroll: {
+    flexGrow: 0,
+    height: 44,
+    marginBottom: spacing.sm,
+  },
   filters: {
     paddingHorizontal: spacing.md,
     gap: spacing.sm,
-    marginBottom: spacing.md,
+    alignItems: 'center',
   },
   chip: {
     paddingHorizontal: spacing.md,
@@ -95,6 +222,16 @@ const styles = StyleSheet.create({
   },
   chipActive: {
     backgroundColor: colors.primary[500],
+  },
+  createRow: {
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  sectionHeader: {
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   list: {
     paddingHorizontal: spacing.md,

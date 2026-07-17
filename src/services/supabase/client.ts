@@ -1,5 +1,5 @@
 import { AppState } from 'react-native';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, processLock } from '@supabase/supabase-js';
 import { Database } from '@/types/database';
 import { LargeSecureStore } from './secureStorage';
 
@@ -19,6 +19,11 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
+    // React Native has no real Web Locks API — the default browser lock can
+    // DEADLOCK here (a stuck token refresh holds it and every later auth call —
+    // getSession, signInWithPassword — hangs behind it forever). processLock is
+    // the in-process lock supabase-js ships for non-browser environments.
+    lock: processLock,
   },
 });
 

@@ -1,8 +1,10 @@
 import { type ComponentProps } from 'react';
-import { Text as RNText } from 'react-native';
+import { View, Text as RNText, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs, Redirect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/stores/auth.store';
+import { useCoupleRealtime } from '@/api/couples';
 import { LoadingScreen } from '@/components/ui';
 import { colors } from '@/theme/colors';
 import { fonts } from '@/theme/typography';
@@ -13,14 +15,17 @@ const INACTIVE = colors.neutral[400];
 // Active (filled) tab color — primary purple (chosen 2026-06-26).
 const ACTIVE = colors.primary[500];
 
+// Active tab = solid brand-purple filled icon dominating a snug light-purple
+// chip (owner design 2026-07-04 — dark fill inside a soft halo, not a wide pill).
 function tabBarIcon(active: IoniconName, inactive: IoniconName, activeColor: string) {
-  const Icon = ({ focused }: { focused: boolean }) => (
-    <Ionicons
-      name={focused ? active : inactive}
-      size={24}
-      color={focused ? activeColor : INACTIVE}
-    />
-  );
+  const Icon = ({ focused }: { focused: boolean }) =>
+    focused ? (
+      <View style={styles.pill}>
+        <Ionicons name={active} size={26} color={activeColor} />
+      </View>
+    ) : (
+      <Ionicons name={inactive} size={24} color={INACTIVE} />
+    );
   Icon.displayName = 'TabBarIcon';
   return Icon;
 }
@@ -44,6 +49,11 @@ function tabBarLabel(label: string, activeColor: string) {
 export default function TabsLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isLoading = useAuthStore((s) => s.isLoading);
+  const insets = useSafeAreaInsets();
+
+  // Couple-wide realtime (devotional progress + couple/streak updates). No-ops
+  // until a couple is in context; cleans up on sign-out.
+  useCoupleRealtime();
 
   if (isLoading) return <LoadingScreen />;
   if (!isAuthenticated) return <Redirect href="/(auth)/sign-in" />;
@@ -55,7 +65,15 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.neutral[200],
-          paddingTop: 4,
+          // The default bar allots a ~25px icon slot, which CLIPS the active
+          // pill (icon 26 + padding = 34 tall) to a sliver. Give the bar and
+          // the icon slot explicit room instead.
+          height: 62 + insets.bottom,
+          paddingTop: 6,
+        },
+        tabBarIconStyle: {
+          width: 56,
+          height: 34,
         },
       }}
     >
@@ -70,9 +88,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="devotional"
         options={{
-          title: 'Devotional',
-          tabBarIcon: tabBarIcon('book', 'book-outline', ACTIVE),
-          tabBarLabel: tabBarLabel('Devotional', ACTIVE),
+          title: 'Grow',
+          tabBarIcon: tabBarIcon('leaf', 'leaf-outline', ACTIVE),
+          tabBarLabel: tabBarLabel('Grow', ACTIVE),
         }}
       />
       <Tabs.Screen
@@ -84,11 +102,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="dates"
+        name="journal"
         options={{
-          title: 'Dates',
-          tabBarIcon: tabBarIcon('calendar', 'calendar-outline', ACTIVE),
-          tabBarLabel: tabBarLabel('Dates', ACTIVE),
+          title: 'Journal',
+          tabBarIcon: tabBarIcon('journal', 'journal-outline', ACTIVE),
+          tabBarLabel: tabBarLabel('Journal', ACTIVE),
         }}
       />
       <Tabs.Screen
@@ -99,6 +117,17 @@ export default function TabsLayout() {
           tabBarLabel: tabBarLabel('Profile', ACTIVE),
         }}
       />
+      {/* Dates is reachable from Home quick actions, not a bottom tab (IA restructure 2026-06-29). */}
+      <Tabs.Screen name="dates" options={{ href: null }} />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  pill: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 14,
+    backgroundColor: colors.primary[100],
+  },
+});

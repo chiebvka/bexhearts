@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { authService } from '@/services/supabase/auth';
 import { track, ANALYTICS_EVENTS } from '@/services/analytics/events';
 import { getErrorMessage } from '@/utils/error';
+import { withTimeout } from '@/utils/withTimeout';
 import { setLastUsedMethod } from '../lastUsedMethod';
 import { getAppleIdentityToken, getGoogleIdToken } from '../socialAuth';
 import type { SignInFormData, SignUpFormData } from '../schemas';
@@ -13,6 +14,12 @@ function isEmailNotConfirmed(error: unknown): boolean {
   return e?.code === 'email_not_confirmed' || /not confirmed/i.test(e?.message ?? '');
 }
 
+// Auth calls are bounded so a promise that never settles (wedged storage /
+// dead fetch) surfaces as a retryable error instead of an endless spinner.
+const AUTH_TIMEOUT_MS = 12000;
+const AUTH_TIMEOUT_MESSAGE =
+  'This is taking too long. Check your connection and try again.';
+
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,9 +29,10 @@ export function useAuth() {
     setError(null);
 
     try {
-      const { error: authError } = await authService.signInWithEmail(
-        data.email,
-        data.password
+      const { error: authError } = await withTimeout(
+        authService.signInWithEmail(data.email, data.password),
+        AUTH_TIMEOUT_MS,
+        AUTH_TIMEOUT_MESSAGE
       );
       if (authError) {
         if (isEmailNotConfirmed(authError)) {
@@ -54,8 +62,11 @@ export function useAuth() {
     setError(null);
 
     try {
-      const { data: result, error: authError } =
-        await authService.signUpWithEmail(data.email, data.password);
+      const { data: result, error: authError } = await withTimeout(
+        authService.signUpWithEmail(data.email, data.password),
+        AUTH_TIMEOUT_MS,
+        AUTH_TIMEOUT_MESSAGE
+      );
       if (authError) throw authError;
       track(ANALYTICS_EVENTS.SIGN_UP, { method: 'email' });
 
@@ -82,9 +93,10 @@ export function useAuth() {
     setError(null);
 
     try {
-      const { error: verifyError } = await authService.verifySignupOtp(
-        email,
-        token
+      const { error: verifyError } = await withTimeout(
+        authService.verifySignupOtp(email, token),
+        AUTH_TIMEOUT_MS,
+        AUTH_TIMEOUT_MESSAGE
       );
       if (verifyError) throw verifyError;
       void setLastUsedMethod('email');

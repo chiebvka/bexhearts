@@ -4,6 +4,7 @@ import { supabase } from '@/services/supabase/client';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
 import { getWeekOf } from '@/lib/dates';
+import { logActivity } from './activity';
 import type { CheckInInsert } from '@/types/api';
 
 export function useCheckIns() {
@@ -47,6 +48,27 @@ export function useThisWeekCheckIn() {
   });
 }
 
+// Both partners' check-ins for the current week — powers the comparison view
+// (D3·M3). Returns an array so the screen can split mine vs. partner by user_id.
+export function useThisWeekComparison() {
+  const coupleId = useCoupleStore((s) => s.coupleId);
+  const weekOf = getWeekOf();
+
+  return useQuery({
+    queryKey: queryKeys.checkIns.weekComparison(coupleId!, weekOf),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('check_ins')
+        .select('*')
+        .eq('couple_id', coupleId!)
+        .eq('week_of', weekOf);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!coupleId,
+  });
+}
+
 export function useSubmitCheckIn() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -58,12 +80,15 @@ export function useSubmitCheckIn() {
     ) => {
       const { data, error } = await supabase
         .from('check_ins')
-        .upsert({
-          ...input,
-          couple_id: coupleId!,
-          user_id: user!.id,
-          week_of: getWeekOf(),
-        })
+        .upsert(
+          {
+            ...input,
+            couple_id: coupleId!,
+            user_id: user!.id,
+            week_of: getWeekOf(),
+          },
+          { onConflict: 'couple_id,user_id,week_of' }
+        )
         .select()
         .single();
       if (error) throw error;
@@ -73,6 +98,10 @@ export function useSubmitCheckIn() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.checkIns.byCoupleId(coupleId!),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.checkIns.weekComparison(coupleId!, getWeekOf()),
+      });
+      void logActivity('check_in');
     },
   });
 }

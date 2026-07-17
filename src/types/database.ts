@@ -1,372 +1,1184 @@
-// Auto-generated types from Supabase CLI:
-// npx supabase gen types typescript --project-id <your-project-id> > src/types/database.ts
-//
-// Below is the expected shape based on our schema. Replace with generated types
-// once your Supabase project is created and migration has been applied.
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
-
-export interface Database {
+export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
-      profiles: {
+      activity_log: {
         Row: {
-          id: string;
-          email: string;
-          full_name: string | null;
-          avatar_url: string | null;
-          denomination: string | null;
-          onboarding_completed: boolean;
-          couple_id: string | null;
-          push_token: string | null;
-          timezone: string;
-          deletion_scheduled_at: string | null;
-          growth_focus: string[];
-          created_at: string;
-          updated_at: string;
-        };
+          activity_date: string
+          activity_type: string
+          couple_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
         Insert: {
-          id: string;
-          email: string;
-          full_name?: string | null;
-          avatar_url?: string | null;
-          denomination?: string | null;
-          onboarding_completed?: boolean;
-          couple_id?: string | null;
-          push_token?: string | null;
-          timezone?: string;
-          deletion_scheduled_at?: string | null;
-          growth_focus?: string[];
-          created_at?: string;
-          updated_at?: string;
-        };
+          activity_date?: string
+          activity_type: string
+          couple_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
         Update: {
-          id?: string;
-          email?: string;
-          full_name?: string | null;
-          avatar_url?: string | null;
-          denomination?: string | null;
-          onboarding_completed?: boolean;
-          couple_id?: string | null;
-          push_token?: string | null;
-          timezone?: string;
-          deletion_scheduled_at?: string | null;
-          growth_focus?: string[];
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      couples: {
-        Row: {
-          id: string;
-          partner_a_id: string;
-          partner_b_id: string | null;
-          invite_code: string;
-          invite_code_expires_at: string | null;
-          linked_at: string | null;
-          streak_count: number;
-          streak_last_date: string | null;
-          subscription_tier: 'free' | 'premium';
-          relationship_stage: 'dating' | 'engaged' | 'married' | null;
-          stage_started_on: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          partner_a_id: string;
-          partner_b_id?: string | null;
-          invite_code: string;
-          invite_code_expires_at?: string | null;
-          linked_at?: string | null;
-          streak_count?: number;
-          streak_last_date?: string | null;
-          subscription_tier?: 'free' | 'premium';
-          relationship_stage?: 'dating' | 'engaged' | 'married' | null;
-          stage_started_on?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          partner_a_id?: string;
-          partner_b_id?: string | null;
-          invite_code?: string;
-          invite_code_expires_at?: string | null;
-          linked_at?: string | null;
-          streak_count?: number;
-          streak_last_date?: string | null;
-          subscription_tier?: 'free' | 'premium';
-          relationship_stage?: 'dating' | 'engaged' | 'married' | null;
-          stage_started_on?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      devotionals: {
-        Row: {
-          id: string;
-          publish_date: string;
-          title: string;
-          scripture_reference: string;
-          scripture_text: string;
-          reflection: string;
-          couple_action: string;
-          category: string | null;
-          is_premium: boolean;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          publish_date: string;
-          title: string;
-          scripture_reference: string;
-          scripture_text: string;
-          reflection: string;
-          couple_action: string;
-          category?: string | null;
-          is_premium?: boolean;
-          created_at?: string;
-        };
-        Update: {
-          publish_date?: string;
-          title?: string;
-          scripture_reference?: string;
-          scripture_text?: string;
-          reflection?: string;
-          couple_action?: string;
-          category?: string | null;
-          is_premium?: boolean;
-        };
-        Relationships: [];
-      };
-      devotional_progress: {
-        Row: {
-          id: string;
-          devotional_id: string;
-          user_id: string;
-          couple_id: string;
-          reflection_response: string | null;
-          action_completed: boolean;
-          completed_at: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          devotional_id: string;
-          user_id: string;
-          couple_id: string;
-          reflection_response?: string | null;
-          action_completed?: boolean;
-          completed_at?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          reflection_response?: string | null;
-          action_completed?: boolean;
-          completed_at?: string | null;
-        };
-        Relationships: [];
-      };
-      prayers: {
-        Row: {
-          id: string;
-          couple_id: string;
-          author_id: string;
-          title: string;
-          body: string | null;
-          is_answered: boolean;
-          answered_at: string | null;
-          is_archived: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          couple_id: string;
-          author_id: string;
-          title: string;
-          body?: string | null;
-          is_answered?: boolean;
-          answered_at?: string | null;
-          is_archived?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          title?: string;
-          body?: string | null;
-          is_answered?: boolean;
-          answered_at?: string | null;
-          is_archived?: boolean;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      check_ins: {
-        Row: {
-          id: string;
-          couple_id: string;
-          user_id: string;
-          week_of: string;
-          emotional_connection: number | null;
-          spiritual_connection: number | null;
-          communication_quality: number | null;
-          gratitude_note: string | null;
-          growth_area: string | null;
-          prayer_request: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          couple_id: string;
-          user_id: string;
-          week_of: string;
-          emotional_connection?: number | null;
-          spiritual_connection?: number | null;
-          communication_quality?: number | null;
-          gratitude_note?: string | null;
-          growth_area?: string | null;
-          prayer_request?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          emotional_connection?: number | null;
-          spiritual_connection?: number | null;
-          communication_quality?: number | null;
-          gratitude_note?: string | null;
-          growth_area?: string | null;
-          prayer_request?: string | null;
-        };
-        Relationships: [];
-      };
+          activity_date?: string
+          activity_type?: string
+          couple_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_log_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       boundaries: {
         Row: {
-          id: string;
-          couple_id: string;
-          author_id: string;
-          type: 'boundary' | 'temptation';
-          title: string;
-          description: string | null;
-          action_plan: string | null;
-          accountability_partner: string | null;
-          is_active: boolean;
-          created_at: string;
-          updated_at: string;
-        };
+          accountability_partner: string | null
+          action_plan: string | null
+          author_id: string
+          category: string | null
+          couple_id: string
+          created_at: string | null
+          deactivated_at: string | null
+          deactivated_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          title: string
+          type: string
+          updated_at: string | null
+        }
         Insert: {
-          id?: string;
-          couple_id: string;
-          author_id: string;
-          type: 'boundary' | 'temptation';
-          title: string;
-          description?: string | null;
-          action_plan?: string | null;
-          accountability_partner?: string | null;
-          is_active?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
+          accountability_partner?: string | null
+          action_plan?: string | null
+          author_id: string
+          category?: string | null
+          couple_id: string
+          created_at?: string | null
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          title: string
+          type: string
+          updated_at?: string | null
+        }
         Update: {
-          type?: 'boundary' | 'temptation';
-          title?: string;
-          description?: string | null;
-          action_plan?: string | null;
-          accountability_partner?: string | null;
-          is_active?: boolean;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      date_ideas: {
+          accountability_partner?: string | null
+          action_plan?: string | null
+          author_id?: string
+          category?: string | null
+          couple_id?: string
+          created_at?: string | null
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boundaries_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boundaries_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      check_ins: {
         Row: {
-          id: string;
-          title: string;
-          description: string;
-          category: string;
-          estimated_cost: 'free' | '$' | '$$' | '$$$' | null;
-          estimated_duration: string | null;
-          scripture_tie: string | null;
-          discussion_questions: Json;
-          is_premium: boolean;
-          is_challenge: boolean;
-          created_at: string;
-        };
+          communication_quality: number | null
+          couple_id: string
+          created_at: string | null
+          emotional_connection: number | null
+          gratitude_note: string | null
+          growth_area: string | null
+          id: string
+          prayer_request: string | null
+          share_growth_note: boolean
+          share_prayer_request: boolean
+          spiritual_connection: number | null
+          user_id: string
+          week_of: string
+        }
         Insert: {
-          id?: string;
-          title: string;
-          description: string;
-          category: string;
-          estimated_cost?: 'free' | '$' | '$$' | '$$$' | null;
-          estimated_duration?: string | null;
-          scripture_tie?: string | null;
-          discussion_questions?: Json;
-          is_premium?: boolean;
-          is_challenge?: boolean;
-          created_at?: string;
-        };
+          communication_quality?: number | null
+          couple_id: string
+          created_at?: string | null
+          emotional_connection?: number | null
+          gratitude_note?: string | null
+          growth_area?: string | null
+          id?: string
+          prayer_request?: string | null
+          share_growth_note?: boolean
+          share_prayer_request?: boolean
+          spiritual_connection?: number | null
+          user_id: string
+          week_of: string
+        }
         Update: {
-          title?: string;
-          description?: string;
-          category?: string;
-          estimated_cost?: 'free' | '$' | '$$' | '$$$' | null;
-          estimated_duration?: string | null;
-          scripture_tie?: string | null;
-          discussion_questions?: Json;
-          is_premium?: boolean;
-          is_challenge?: boolean;
-        };
-        Relationships: [];
-      };
+          communication_quality?: number | null
+          couple_id?: string
+          created_at?: string | null
+          emotional_connection?: number | null
+          gratitude_note?: string | null
+          growth_area?: string | null
+          id?: string
+          prayer_request?: string | null
+          share_growth_note?: boolean
+          share_prayer_request?: boolean
+          spiritual_connection?: number | null
+          user_id?: string
+          week_of?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "check_ins_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "check_ins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couple_dates: {
         Row: {
-          id: string;
-          couple_id: string;
-          date_idea_id: string;
-          completed_at: string | null;
-          rating: number | null;
-          notes: string | null;
-          photo_url: string | null;
-          created_at: string;
-        };
+          completed_at: string | null
+          couple_id: string
+          created_at: string | null
+          custom_description: string | null
+          custom_title: string | null
+          date_idea_id: string | null
+          id: string
+          notes: string | null
+          photo_url: string | null
+          rating: number | null
+          scheduled_for: string | null
+        }
         Insert: {
-          id?: string;
-          couple_id: string;
-          date_idea_id: string;
-          completed_at?: string | null;
-          rating?: number | null;
-          notes?: string | null;
-          photo_url?: string | null;
-          created_at?: string;
-        };
+          completed_at?: string | null
+          couple_id: string
+          created_at?: string | null
+          custom_description?: string | null
+          custom_title?: string | null
+          date_idea_id?: string | null
+          id?: string
+          notes?: string | null
+          photo_url?: string | null
+          rating?: number | null
+          scheduled_for?: string | null
+        }
         Update: {
-          completed_at?: string | null;
-          rating?: number | null;
-          notes?: string | null;
-          photo_url?: string | null;
-        };
-        Relationships: [];
-      };
-    };
-    Views: Record<string, never>;
+          completed_at?: string | null
+          couple_id?: string
+          created_at?: string | null
+          custom_description?: string | null
+          custom_title?: string | null
+          date_idea_id?: string | null
+          id?: string
+          notes?: string | null
+          photo_url?: string | null
+          rating?: number | null
+          scheduled_for?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_dates_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "couple_dates_date_idea_id_fkey"
+            columns: ["date_idea_id"]
+            isOneToOne: false
+            referencedRelation: "date_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_milestones: {
+        Row: {
+          color: string | null
+          couple_id: string
+          created_at: string | null
+          created_by: string
+          event_date: string
+          event_time: string | null
+          icon: string | null
+          id: string
+          is_recurring: boolean | null
+          title: string
+        }
+        Insert: {
+          color?: string | null
+          couple_id: string
+          created_at?: string | null
+          created_by: string
+          event_date: string
+          event_time?: string | null
+          icon?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          title: string
+        }
+        Update: {
+          color?: string | null
+          couple_id?: string
+          created_at?: string | null
+          created_by?: string
+          event_date?: string
+          event_time?: string | null
+          icon?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_milestones_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "couple_milestones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_events: {
+        Row: {
+          couple_id: string
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          ref_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          ref_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          ref_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_events_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "couple_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couples: {
+        Row: {
+          country_code: string | null
+          created_at: string | null
+          grace_days_remaining: number
+          grace_week: string | null
+          id: string
+          invite_code: string
+          invite_code_expires_at: string | null
+          leaderboard_number: number
+          leaderboard_opt_in: boolean
+          linked_at: string | null
+          partner_a_id: string
+          partner_b_id: string | null
+          relationship_stage: string | null
+          stage_started_on: string | null
+          streak_count: number | null
+          streak_last_date: string | null
+          subscription_tier: string | null
+          timezone: string
+          updated_at: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string | null
+          grace_days_remaining?: number
+          grace_week?: string | null
+          id?: string
+          invite_code: string
+          invite_code_expires_at?: string | null
+          leaderboard_number?: number
+          leaderboard_opt_in?: boolean
+          linked_at?: string | null
+          partner_a_id: string
+          partner_b_id?: string | null
+          relationship_stage?: string | null
+          stage_started_on?: string | null
+          streak_count?: number | null
+          streak_last_date?: string | null
+          subscription_tier?: string | null
+          timezone?: string
+          updated_at?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string | null
+          grace_days_remaining?: number
+          grace_week?: string | null
+          id?: string
+          invite_code?: string
+          invite_code_expires_at?: string | null
+          leaderboard_number?: number
+          leaderboard_opt_in?: boolean
+          linked_at?: string | null
+          partner_a_id?: string
+          partner_b_id?: string | null
+          relationship_stage?: string | null
+          stage_started_on?: string | null
+          streak_count?: number | null
+          streak_last_date?: string | null
+          subscription_tier?: string | null
+          timezone?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couples_partner_a_id_fkey"
+            columns: ["partner_a_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "couples_partner_b_id_fkey"
+            columns: ["partner_b_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      date_idea_ratings: {
+        Row: {
+          couple_id: string
+          created_at: string | null
+          date_idea_id: string
+          id: string
+          rating: number
+          review: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string | null
+          date_idea_id: string
+          id?: string
+          rating: number
+          review?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string | null
+          date_idea_id?: string
+          id?: string
+          rating?: number
+          review?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "date_idea_ratings_date_idea_id_fkey"
+            columns: ["date_idea_id"]
+            isOneToOne: false
+            referencedRelation: "date_ideas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "date_idea_ratings_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "date_idea_ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      date_ideas: {
+        Row: {
+          accessibility_tags: string[]
+          category: string
+          created_at: string | null
+          description: string
+          discussion_questions: Json | null
+          estimated_cost: string | null
+          estimated_duration: string | null
+          id: string
+          is_challenge: boolean | null
+          is_premium: boolean | null
+          location_type: string
+          scripture_tie: string | null
+          season: string
+          stage_fit: string[]
+          title: string
+        }
+        Insert: {
+          accessibility_tags?: string[]
+          category: string
+          created_at?: string | null
+          description: string
+          discussion_questions?: Json | null
+          estimated_cost?: string | null
+          estimated_duration?: string | null
+          id?: string
+          is_challenge?: boolean | null
+          is_premium?: boolean | null
+          location_type?: string
+          scripture_tie?: string | null
+          season?: string
+          stage_fit?: string[]
+          title: string
+        }
+        Update: {
+          accessibility_tags?: string[]
+          category?: string
+          created_at?: string | null
+          description?: string
+          discussion_questions?: Json | null
+          estimated_cost?: string | null
+          estimated_duration?: string | null
+          id?: string
+          is_challenge?: boolean | null
+          is_premium?: boolean | null
+          location_type?: string
+          scripture_tie?: string | null
+          season?: string
+          stage_fit?: string[]
+          title?: string
+        }
+        Relationships: []
+      }
+      devotional_progress: {
+        Row: {
+          action_completed: boolean | null
+          completed_at: string | null
+          couple_id: string
+          created_at: string | null
+          devotional_id: string
+          id: string
+          reflection_response: string | null
+          user_id: string
+        }
+        Insert: {
+          action_completed?: boolean | null
+          completed_at?: string | null
+          couple_id: string
+          created_at?: string | null
+          devotional_id: string
+          id?: string
+          reflection_response?: string | null
+          user_id: string
+        }
+        Update: {
+          action_completed?: boolean | null
+          completed_at?: string | null
+          couple_id?: string
+          created_at?: string | null
+          devotional_id?: string
+          id?: string
+          reflection_response?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "devotional_progress_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devotional_progress_devotional_id_fkey"
+            columns: ["devotional_id"]
+            isOneToOne: false
+            referencedRelation: "devotionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devotional_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      devotional_drafts: {
+        Row: {
+          approved: boolean
+          category: string | null
+          couple_action: string
+          created_at: string | null
+          focus_tags: string[]
+          id: string
+          reflection: string
+          scripture_reference: string
+          scripture_text: string
+          stage_tags: string[]
+          title: string
+        }
+        Insert: {
+          approved?: boolean
+          category?: string | null
+          couple_action: string
+          created_at?: string | null
+          focus_tags?: string[]
+          id?: string
+          reflection: string
+          scripture_reference: string
+          scripture_text: string
+          stage_tags?: string[]
+          title: string
+        }
+        Update: {
+          approved?: boolean
+          category?: string | null
+          couple_action?: string
+          created_at?: string | null
+          focus_tags?: string[]
+          id?: string
+          reflection?: string
+          scripture_reference?: string
+          scripture_text?: string
+          stage_tags?: string[]
+          title?: string
+        }
+        Relationships: []
+      }
+      devotionals: {
+        Row: {
+          category: string | null
+          couple_action: string
+          created_at: string | null
+          focus_tags: string[]
+          id: string
+          is_premium: boolean | null
+          publish_date: string | null
+          reflection: string
+          scripture_reference: string
+          scripture_text: string
+          sequence: number | null
+          stage_tags: string[]
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          couple_action: string
+          created_at?: string | null
+          focus_tags?: string[]
+          id?: string
+          is_premium?: boolean | null
+          publish_date?: string | null
+          reflection: string
+          scripture_reference: string
+          scripture_text: string
+          sequence?: number | null
+          stage_tags?: string[]
+          title: string
+        }
+        Update: {
+          category?: string | null
+          couple_action?: string
+          created_at?: string | null
+          focus_tags?: string[]
+          id?: string
+          is_premium?: boolean | null
+          publish_date?: string | null
+          reflection?: string
+          scripture_reference?: string
+          scripture_text?: string
+          sequence?: number | null
+          stage_tags?: string[]
+          title?: string
+        }
+        Relationships: []
+      }
+      memories: {
+        Row: {
+          couple_id: string
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          memory_date: string
+          title: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          memory_date?: string
+          title: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          memory_date?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memories_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memories_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memory_images: {
+        Row: {
+          couple_id: string
+          created_at: string | null
+          id: string
+          image_url: string
+          memory_id: string
+          position: number | null
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string | null
+          id?: string
+          image_url: string
+          memory_id: string
+          position?: number | null
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          memory_id?: string
+          position?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memory_images_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memory_images_memory_id_fkey"
+            columns: ["memory_id"]
+            isOneToOne: false
+            referencedRelation: "memories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memory_reactions: {
+        Row: {
+          couple_id: string
+          created_at: string | null
+          id: string
+          memory_id: string
+          note: string | null
+          reaction: string | null
+          user_id: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string | null
+          id?: string
+          memory_id: string
+          note?: string | null
+          reaction?: string | null
+          user_id: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string | null
+          id?: string
+          memory_id?: string
+          note?: string | null
+          reaction?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memory_reactions_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memory_reactions_memory_id_fkey"
+            columns: ["memory_id"]
+            isOneToOne: false
+            referencedRelation: "memories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memory_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      points_ledger: {
+        Row: {
+          couple_id: string
+          created_at: string | null
+          id: string
+          points: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string | null
+          id?: string
+          points: number
+          reason: string
+          user_id: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string | null
+          id?: string
+          points?: number
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "points_ledger_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "points_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prayers: {
+        Row: {
+          answered_at: string | null
+          archived_at: string | null
+          author_id: string
+          body: string | null
+          couple_id: string
+          created_at: string | null
+          ai_generated_at: string | null
+          ai_prayer: string | null
+          ai_verse_ref: string | null
+          ai_verse_text: string | null
+          id: string
+          is_answered: boolean | null
+          is_archived: boolean | null
+          is_private: boolean
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_generated_at?: string | null
+          ai_prayer?: string | null
+          ai_verse_ref?: string | null
+          ai_verse_text?: string | null
+          answered_at?: string | null
+          archived_at?: string | null
+          author_id: string
+          body?: string | null
+          couple_id: string
+          created_at?: string | null
+          id?: string
+          is_answered?: boolean | null
+          is_archived?: boolean | null
+          is_private?: boolean
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_generated_at?: string | null
+          ai_prayer?: string | null
+          ai_verse_ref?: string | null
+          ai_verse_text?: string | null
+          answered_at?: string | null
+          archived_at?: string | null
+          author_id?: string
+          body?: string | null
+          couple_id?: string
+          created_at?: string | null
+          id?: string
+          is_answered?: boolean | null
+          is_archived?: boolean | null
+          is_private?: boolean
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayers_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prayers_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          ai_prayer_consent_at: string | null
+          avatar_url: string | null
+          couple_id: string | null
+          created_at: string | null
+          deletion_scheduled_at: string | null
+          denomination: string | null
+          email: string
+          full_name: string | null
+          growth_focus: string[]
+          id: string
+          onboarding_completed: boolean | null
+          push_token: string | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_prayer_consent_at?: string | null
+          avatar_url?: string | null
+          couple_id?: string | null
+          created_at?: string | null
+          deletion_scheduled_at?: string | null
+          denomination?: string | null
+          email: string
+          full_name?: string | null
+          growth_focus?: string[]
+          id: string
+          onboarding_completed?: boolean | null
+          push_token?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_prayer_consent_at?: string | null
+          avatar_url?: string | null
+          couple_id?: string | null
+          created_at?: string | null
+          deletion_scheduled_at?: string | null
+          denomination?: string | null
+          email?: string
+          full_name?: string | null
+          growth_focus?: string[]
+          id?: string
+          onboarding_completed?: boolean | null
+          push_token?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_profiles_couple"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
     Functions: {
-      get_my_couple_id: {
-        Args: Record<string, never>;
-        Returns: string | null;
-      };
-      link_partner: {
-        Args: { p_invite_code: string };
-        Returns: string;
-      };
-      request_account_deletion: {
-        Args: Record<string, never>;
-        Returns: string;
-      };
-      cancel_account_deletion: {
-        Args: Record<string, never>;
-        Returns: undefined;
-      };
-    };
-    Enums: Record<string, never>;
-    CompositeTypes: Record<string, never>;
-  };
+      _hard_delete_account: { Args: { p_user_id: string }; Returns: undefined }
+      cancel_account_deletion: { Args: never; Returns: undefined }
+      get_today_devotional: {
+        Args: never
+        Returns: Database["public"]["Tables"]["devotionals"]["Row"][]
+      }
+      promote_approved_devotionals: {
+        Args: never
+        Returns: number
+      }
+      get_date_idea_aggregates: {
+        Args: never
+        Returns: {
+          date_idea_id: string
+          avg_rating: number
+          couples_count: number
+        }[]
+      }
+      get_leaderboard: {
+        Args: { entry_limit?: number }
+        Returns: {
+          rank: number
+          label: string
+          couple_number: number
+          country_code: string | null
+          points: number
+          is_you: boolean
+        }[]
+      }
+      get_my_couple_id: { Args: never; Returns: string }
+      link_partner: { Args: { p_invite_code: string }; Returns: string }
+      process_due_account_deletions: { Args: never; Returns: number }
+      request_account_deletion: { Args: never; Returns: string }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const
+
