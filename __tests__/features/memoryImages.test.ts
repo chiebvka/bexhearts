@@ -1,36 +1,8 @@
-import { buildMemoryImageRows, sortImageUrls } from '@/features/journal/images';
+import { sortImageUrls } from '@/features/journal/images';
 
-describe('buildMemoryImageRows', () => {
-  it('builds ordered rows starting at position 0 by default', () => {
-    const rows = buildMemoryImageRows({
-      memoryId: 'mem-1',
-      coupleId: 'couple-1',
-      imageUrls: ['https://cdn/a.jpg', 'https://cdn/b.jpg'],
-    });
-
-    expect(rows).toEqual([
-      { memory_id: 'mem-1', couple_id: 'couple-1', image_url: 'https://cdn/a.jpg', position: 0 },
-      { memory_id: 'mem-1', couple_id: 'couple-1', image_url: 'https://cdn/b.jpg', position: 1 },
-    ]);
-  });
-
-  it('appends after existing images via startPosition', () => {
-    const rows = buildMemoryImageRows({
-      memoryId: 'mem-1',
-      coupleId: 'couple-1',
-      imageUrls: ['https://cdn/c.jpg'],
-      startPosition: 3,
-    });
-
-    expect(rows[0].position).toBe(3);
-  });
-
-  it('handles an empty batch', () => {
-    expect(
-      buildMemoryImageRows({ memoryId: 'm', coupleId: 'c', imageUrls: [] })
-    ).toEqual([]);
-  });
-});
+// buildMemoryImageRows retired with H2·M2 (the upload outbox inserts rows
+// one-per-photo as uploads land) — its ordering rules now live in
+// __tests__/features/uploadOutbox.test.ts.
 
 describe('sortImageUrls', () => {
   it('orders by position and returns urls', () => {

@@ -1,6 +1,7 @@
-import { StyleSheet } from 'react-native';
+import {  } from 'react-native';
 import { Text, Card } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 interface ScriptureBlockProps {
@@ -23,7 +24,7 @@ export function ScriptureBlock({ reference, text }: ScriptureBlockProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     marginVertical: spacing.md,
   },
@@ -34,4 +35,4 @@ const styles = StyleSheet.create({
   reference: {
     textAlign: 'right',
   },
-});
+}));

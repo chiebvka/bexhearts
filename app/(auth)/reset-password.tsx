@@ -1,10 +1,11 @@
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, BackButton } from '@/components/ui';
 import { KeyboardAvoid } from '@/components/layout/KeyboardAvoid';
 import { ResetPasswordForm } from '@/features/auth';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 export default function ResetPasswordScreen() {
@@ -29,7 +30,7 @@ export default function ResetPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     paddingHorizontal: spacing.lg,
@@ -41,4 +42,4 @@ const styles = StyleSheet.create({
   subtitle: {
     marginTop: spacing.sm,
   },
-});
+}));

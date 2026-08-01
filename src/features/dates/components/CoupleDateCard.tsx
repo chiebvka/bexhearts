@@ -13,6 +13,8 @@ export interface CoupleDateLike {
   custom_description?: string | null;
   scheduled_for?: string | null;
   completed_at?: string | null;
+  suggested_by?: string | null;
+  accepted_at?: string | null;
   rating?: number | null;
   notes?: string | null;
   date_ideas?: { title?: string | null; category?: string | null } | null;
@@ -22,15 +24,18 @@ interface CoupleDateCardProps {
   coupleDate: CoupleDateLike;
   onComplete?: () => void;
   onRemove?: () => void;
+  // G2 Dates v2: set only for the NON-suggesting partner on a suggested row.
+  onAccept?: () => void;
 }
 
 const STATUS_META = {
   planned: { label: 'Planned', variant: 'default' as const },
   saved: { label: 'Saved', variant: 'default' as const },
   completed: { label: 'Completed', variant: 'success' as const },
+  suggested: { label: 'Suggested 💌', variant: 'premium' as const },
 };
 
-export function CoupleDateCard({ coupleDate, onComplete, onRemove }: CoupleDateCardProps) {
+export function CoupleDateCard({ coupleDate, onComplete, onRemove, onAccept }: CoupleDateCardProps) {
   const status = getDateStatus(coupleDate);
   const title = getDateTitle(coupleDate);
   const meta = STATUS_META[status];
@@ -68,7 +73,32 @@ export function CoupleDateCard({ coupleDate, onComplete, onRemove }: CoupleDateC
         </View>
       )}
 
-      {(onComplete || onRemove) && status !== 'completed' && (
+      {status === 'suggested' && (
+        <View style={styles.actions}>
+          {onAccept ? (
+            <>
+              <Pressable onPress={onAccept} style={styles.actionButton} hitSlop={8}>
+                <Text variant="labelMedium" color={colors.primary[500]}>
+                  Accept 💜
+                </Text>
+              </Pressable>
+              {onRemove && (
+                <Pressable onPress={onRemove} style={styles.actionButton} hitSlop={8}>
+                  <Text variant="labelMedium" color={colors.text.tertiary}>
+                    Pass
+                  </Text>
+                </Pressable>
+              )}
+            </>
+          ) : (
+            <Text variant="labelSmall" color={colors.text.tertiary}>
+              Waiting for your partner to accept…
+            </Text>
+          )}
+        </View>
+      )}
+
+      {(onComplete || onRemove) && status !== 'completed' && status !== 'suggested' && (
         <View style={styles.actions}>
           {onComplete && (
             <Pressable onPress={onComplete} style={styles.actionButton} hitSlop={8}>

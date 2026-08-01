@@ -1,11 +1,13 @@
-import { View, Pressable, Linking, Share, StyleSheet } from 'react-native';
+import { View, Pressable, Linking, Share, Switch } from 'react-native';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
 import { Text, Card } from '@/components/ui';
 import { useUIStore, type AppearancePreference } from '@/stores/ui.store';
+import { useMyCouple, useSetLongDistance } from '@/api/couples';
 import { restorePurchases, isRevenueCatConfigured } from '@/services/revenuecat/client';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import {
   APP_NAME,
@@ -60,12 +62,12 @@ export function SettingsSections() {
   const appearance = useUIStore((s) => s.appearance);
   const setAppearance = useUIStore((s) => s.setAppearance);
   const showToast = useUIStore((s) => s.showToast);
+  // E11 — couple-level long-distance mode (either partner can flip it).
+  const { data: couple } = useMyCouple();
+  const setLongDistance = useSetLongDistance();
 
   const pickAppearance = (key: AppearancePreference) => {
     setAppearance(key);
-    if (key === 'dark') {
-      showToast('Saved — the dark theme arrives in an upcoming update.', 'info');
-    }
   };
 
   const handleRestore = async () => {
@@ -134,11 +136,73 @@ export function SettingsSections() {
         {appearance !== 'system' ? (
           <Text variant="labelSmall" color={colors.text.tertiary} style={styles.appearanceHint}>
             {appearance === 'dark'
-              ? 'Saved — the dark theme ships in an upcoming update and will apply automatically.'
-              : 'Light mode is the current look.'}
+              ? 'Dark mode is on.'
+              : 'Light mode is on — pick System to follow your phone.'}
           </Text>
         ) : null}
       </Card>
+
+      {/* G4 — the switches live on their own page (owner ask 2026-07-26) so
+          this tab stays a short list of rows. All categories default ON. */}
+      <Text variant="labelLarge" color={colors.text.tertiary} style={styles.sectionLabel}>
+        Notifications
+      </Text>
+      <SettingsCard
+        rows={[
+          {
+            label: 'Notification settings',
+            onPress: () => router.push('/(tabs)/profile/notifications'),
+          },
+        ]}
+      />
+
+      {/* E11 — LDR mode: surfaces virtual dates first + the their-time clock. */}
+      <Text variant="labelLarge" color={colors.text.tertiary} style={styles.sectionLabel}>
+        Your relationship
+      </Text>
+      <Card variant="outlined" padding="sm">
+        {/* E14 — deliberately here under "Your relationship", NOT in the
+            Account danger zone next to Delete account: ending a relationship
+            isn't destroying your account, and it shouldn't feel like it. */}
+        <View style={styles.prefRow}>
+          <View style={styles.prefText}>
+            <Text variant="bodyMedium">Long-distance mode</Text>
+            <Text variant="labelSmall" color={colors.text.tertiary}>
+              Virtual date ideas first, and your partner&apos;s local time on Home
+            </Text>
+          </View>
+          <Switch
+            value={!!couple?.is_long_distance}
+            onValueChange={(on) => setLongDistance.mutate(on)}
+            trackColor={{ true: colors.primary[500], false: colors.neutral[300] }}
+            thumbColor={colors.surfaceElevated}
+          />
+        </View>
+      </Card>
+
+      {/* Deliberately placed ABOVE "Leave this couple". Leaving detaches you
+          immediately and RLS takes your read access with it (E14), so the
+          export has to be the thing you see FIRST — afterwards it's too late,
+          and the 30-day archive is still post-launch work. */}
+      <SettingsCard
+        rows={[
+          {
+            label: 'Export your journal',
+            onPress: () => router.push('/modal/journal-export'),
+          },
+        ]}
+      />
+
+      {couple?.partner_b_id ? (
+        <SettingsCard
+          rows={[
+            {
+              label: 'Leave this couple',
+              onPress: () => router.push('/(tabs)/profile/leave-couple'),
+            },
+          ]}
+        />
+      ) : null}
 
       <Text variant="labelLarge" color={colors.text.tertiary} style={styles.sectionLabel}>
         Subscription
@@ -155,6 +219,7 @@ export function SettingsSections() {
             onPress: () => void Share.share({ message: SHARE_MESSAGE }),
           },
           { label: `Rate ${APP_NAME}`, onPress: handleRate },
+          { label: 'How Bexhearts works', onPress: () => router.push('/modal/how-it-works') },
           { label: 'About us', onPress: () => openLink(WEBSITE_URL) },
         ]}
       />
@@ -190,7 +255,7 @@ export function SettingsSections() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   sectionLabel: {
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
@@ -217,6 +282,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingBottom: spacing.sm,
   },
+  prefRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+  },
+  prefText: {
+    flex: 1,
+    gap: 2,
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -233,4 +310,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
     marginBottom: spacing.lg,
   },
-});
+}));

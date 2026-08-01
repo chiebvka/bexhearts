@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable } from 'react-native';
 import { Card, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { borderRadius } from '@/theme/borderRadius';
 import { selectionHaptic } from '@/lib/haptics';
@@ -38,7 +39,7 @@ export function CoupleAction({ action, completed, onToggle }: CoupleActionProps)
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   label: {
     marginBottom: spacing.xs,
   },
@@ -56,4 +57,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[500],
     borderColor: colors.primary[500],
   },
-});
+}));

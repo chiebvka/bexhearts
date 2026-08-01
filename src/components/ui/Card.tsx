@@ -12,20 +12,22 @@ interface CardProps extends ViewProps {
   style?: ViewStyle;
 }
 
-const variantStyles: Record<CardVariant, ViewStyle> = {
-  elevated: {
-    backgroundColor: colors.surface,
-    ...shadows.md,
-  },
-  outlined: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-  },
-  filled: {
-    backgroundColor: colors.neutral[100],
-  },
-};
+// Function, not a module-scope map: the map would freeze light values at
+// import time (theme rule — see src/theme/colors.ts).
+function variantStyle(variant: CardVariant): ViewStyle {
+  switch (variant) {
+    case 'outlined':
+      return {
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.neutral[200],
+      };
+    case 'filled':
+      return { backgroundColor: colors.neutral[100] };
+    default:
+      return { backgroundColor: colors.surface, ...shadows.md };
+  }
+}
 
 export function Card({
   variant = 'elevated',
@@ -36,7 +38,7 @@ export function Card({
 }: CardProps) {
   return (
     <View
-      style={[styles.base, variantStyles[variant], { padding: spacing[padding] }, style]}
+      style={[styles.base, variantStyle(variant), { padding: spacing[padding] }, style]}
       {...props}
     >
       {children}

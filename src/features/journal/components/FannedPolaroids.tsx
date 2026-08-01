@@ -1,6 +1,7 @@
 import { View, Image, Pressable, StyleSheet } from 'react-native';
 import { Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 interface FannedPolaroidsProps {
@@ -44,7 +45,7 @@ export function FannedPolaroids({ imageUrls, onPress }: FannedPolaroidsProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -72,4 +73,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
-});
+}));

@@ -70,11 +70,25 @@ export async function getGoogleIdToken(): Promise<string | null> {
   return idToken;
 }
 
+export interface AppleCredential {
+  /** Passed to Supabase's signInWithIdToken. */
+  identityToken: string;
+  /**
+   * Short-lived (~5 minute) code that can be exchanged server-side for an Apple
+   * REFRESH token. We need that refresh token months later, at account
+   * deletion, to satisfy App Store Guideline 5.1.1(v) — so this has to be
+   * handed to the `apple-revoke` edge function immediately after sign-in or
+   * it's gone. It is useless to a client on its own and is never stored on the
+   * device.
+   */
+  authorizationCode: string | null;
+}
+
 /**
- * Launches the native Apple sign-in sheet and returns the identity token.
+ * Launches the native Apple sign-in sheet.
  * Returns null if the user cancels. iOS only. Throws on any real failure.
  */
-export async function getAppleIdentityToken(): Promise<string | null> {
+export async function getAppleCredential(): Promise<AppleCredential | null> {
   if (Platform.OS !== 'ios') return null;
 
   try {
@@ -84,7 +98,11 @@ export async function getAppleIdentityToken(): Promise<string | null> {
         AppleAuthentication.AppleAuthenticationScope.EMAIL,
       ],
     });
-    return credential.identityToken ?? null;
+    if (!credential.identityToken) return null;
+    return {
+      identityToken: credential.identityToken,
+      authorizationCode: credential.authorizationCode ?? null,
+    };
   } catch (err) {
     // The user dismissing the Apple sheet is not an error worth surfacing.
     if ((err as { code?: string })?.code === 'ERR_REQUEST_CANCELED') {
@@ -92,4 +110,14 @@ export async function getAppleIdentityToken(): Promise<string | null> {
     }
     throw err;
   }
+}
+
+/**
+ * Identity token only — kept so existing callers and tests keep working.
+ * Prefer `getAppleCredential`, which also yields the authorization code the
+ * revocation flow depends on.
+ */
+export async function getAppleIdentityToken(): Promise<string | null> {
+  const credential = await getAppleCredential();
+  return credential?.identityToken ?? null;
 }

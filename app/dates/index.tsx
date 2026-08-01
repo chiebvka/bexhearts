@@ -1,18 +1,29 @@
 import { useState, useMemo } from 'react';
-import { View, FlatList, SectionList, ScrollView, Pressable, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
+import { View, SectionList, ScrollView, Pressable } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text, Button, LoadingScreen, EmptyState } from '@/components/ui';
-import { DateIdeaCard, CoupleDateCard, partitionCoupleDates } from '@/features/dates';
+import { Text, Button, LoadingScreen, EmptyState, BackButton } from '@/components/ui';
+import {
+  DateIdeaCard,
+  CoupleDateCard,
+  partitionCoupleDates,
+  canRespondToSuggestion,
+  getCountry,
+} from '@/features/dates';
 import {
   useDateIdeas,
   useCoupleDates,
   useRemoveCoupleDate,
+  useAcceptSuggestedDate,
   useDateIdeaAggregates,
 } from '@/api/dates';
 import { DATE_CATEGORIES } from '@/constants/devotional';
-import { lightHaptic } from '@/lib/haptics';
+import { buildIdeaFilters, buildIdeaSections } from '@/features/ldr/ldr';
+import { useMyCouple } from '@/api/couples';
+import { lightHaptic, successHaptic } from '@/lib/haptics';
+import { useAuthStore } from '@/stores/auth.store';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { borderRadius } from '@/theme/borderRadius';
 
@@ -24,6 +35,9 @@ export default function DatesScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
+      {/* Dates is hidden from the tab bar (IA decision 2026-07-04) and is
+          entered from Home, so it needs its own way back. */}
+      <BackButton style={styles.back} />
       <Text variant="headlineLarge" style={styles.title}>
         Dates
       </Text>
@@ -51,9 +65,28 @@ export default function DatesScreen() {
 }
 
 function IdeasTab() {
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
+  // E13 — "See more ideas from Nigeria" arrives as ?country=NG.
+  const { country } = useLocalSearchParams<{ country?: string }>();
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    country ? `country:${country}` : undefined
+  );
   const { data: ideas, isLoading } = useDateIdeas(selectedCategory);
   const { data: aggregates } = useDateIdeaAggregates();
+  const { data: couple } = useMyCouple();
+
+  const isLongDistance = !!couple?.is_long_distance;
+
+  // E11 — Virtual 💻 leads for long-distance couples, trails otherwise.
+  const filters = buildIdeaFilters(
+    DATE_CATEGORIES.map((cat) => ({ key: cat.key, label: cat.label })),
+    isLongDistance
+  );
+
+  const sections = buildIdeaSections({
+    ideas: ideas ?? [],
+    isLongDistance,
+    filtered: !!selectedCategory,
+  });
 
   if (isLoading) return <LoadingScreen />;
 
@@ -76,7 +109,29 @@ function IdeasTab() {
             All
           </Text>
         </Pressable>
-        {DATE_CATEGORIES.map((cat) => (
+        {/* A country arrives via deep link, so it needs its own chip to be
+            visible and dismissible rather than an invisible active filter. */}
+        {country ? (
+          <Pressable
+            onPress={() => setSelectedCategory(`country:${country}`)}
+            style={[
+              styles.chip,
+              selectedCategory === `country:${country}` && styles.chipActive,
+            ]}
+          >
+            <Text
+              variant="labelMedium"
+              color={
+                selectedCategory === `country:${country}`
+                  ? colors.text.inverse
+                  : colors.text.secondary
+              }
+            >
+              {getCountry(country).flag} {getCountry(country).name}
+            </Text>
+          </Pressable>
+        ) : null}
+        {filters.map((cat) => (
           <Pressable
             key={cat.key}
             onPress={() => setSelectedCategory(cat.key)}
@@ -92,14 +147,29 @@ function IdeasTab() {
         ))}
       </ScrollView>
 
-      <FlatList
-        data={ideas}
+      {/* E12 — for a long-distance couple the unfiltered list splits: what
+          you can do apart RIGHT NOW, then everything else reframed as visit
+          planning. Co-located ideas are sunk, never hidden. */}
+      <SectionList
+        sections={sections}
         keyExtractor={(item) => item.id}
+        stickySectionHeadersEnabled={false}
+        renderSectionHeader={({ section }) =>
+          section.title ? (
+            <Text
+              variant="labelLarge"
+              color={colors.text.tertiary}
+              style={styles.sectionHeader}
+            >
+              {section.title}
+            </Text>
+          ) : null
+        }
         renderItem={({ item }) => (
           <DateIdeaCard
             idea={item}
-            aggregate={aggregates?.get(item.id)}
-            onPress={() => router.push(`/(tabs)/dates/${item.id}`)}
+            aggregate={aggregates?.[item.id]}
+            onPress={() => router.push(`/dates/${item.id}`)}
           />
         )}
         contentContainerStyle={styles.list}
@@ -114,10 +184,13 @@ function IdeasTab() {
 function OurDatesTab() {
   const { data: dates, isLoading } = useCoupleDates();
   const removeDate = useRemoveCoupleDate();
+  const acceptDate = useAcceptSuggestedDate();
+  const userId = useAuthStore((s) => s.user?.id);
 
   const sections = useMemo(() => {
-    const { planned, saved, completed } = partitionCoupleDates(dates);
+    const { suggested, planned, saved, completed } = partitionCoupleDates(dates);
     return [
+      { key: 'suggested', title: 'Suggested', data: suggested },
       { key: 'planned', title: 'Planned', data: planned },
       { key: 'saved', title: 'Saved', data: saved },
       { key: 'completed', title: 'Memories', data: completed },
@@ -155,6 +228,14 @@ function OurDatesTab() {
           <CoupleDateCard
             coupleDate={item}
             onComplete={() => router.push(`/modal/date-complete?id=${item.id}`)}
+            onAccept={
+              canRespondToSuggestion(item, userId)
+                ? () => {
+                    successHaptic();
+                    acceptDate.mutate(item.id);
+                  }
+                : undefined
+            }
             onRemove={() => {
               lightHaptic();
               removeDate.mutate(item.id);
@@ -175,10 +256,14 @@ function OurDatesTab() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  // Edge-to-edge screen (sections pad themselves) — match the title's inset.
+  back: {
+    paddingLeft: spacing.md,
   },
   title: {
     paddingHorizontal: spacing.md,
@@ -237,4 +322,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     flexGrow: 1,
   },
-});
+}));

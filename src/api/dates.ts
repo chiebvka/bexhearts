@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from './keys';
+import { notifyPartner, getMyFirstName } from './notifications';
 import { supabase } from '@/services/supabase/client';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
@@ -12,16 +13,48 @@ export interface IdeaAggregate {
   couples_count: number;
 }
 
-// Global couple-level idea ratings ("4.6 · 212 couples").
+// Global couple-level idea ratings ("4.6 · 212 couples"), keyed by idea id.
+// A PLAIN OBJECT on purpose, not a Map: the query cache persists to disk as
+// JSON (H2·M3) and `JSON.stringify(new Map())` is `{}` — a Map came back from
+// a cold start as a shape with no `.get`, crashing the Ideas list. Everything
+// stored in a query must survive a JSON round-trip.
+export type IdeaAggregates = Record<string, IdeaAggregate>;
+
 export function useDateIdeaAggregates() {
   return useQuery({
     queryKey: queryKeys.dateIdeas.aggregates(),
-    queryFn: async (): Promise<Map<string, IdeaAggregate>> => {
+    queryFn: async (): Promise<IdeaAggregates> => {
       const { data, error } = await supabase.rpc('get_date_idea_aggregates');
       if (error) throw error;
-      return new Map((data ?? []).map((row) => [row.date_idea_id, row as IdeaAggregate]));
+      const byId: IdeaAggregates = {};
+      for (const row of data ?? []) {
+        byId[row.date_idea_id] = row as IdeaAggregate;
+      }
+      return byId;
     },
     retry: 1,
+  });
+}
+
+export interface CountryStat {
+  country_code: string;
+  avg_rating: number;
+  couples_count: number;
+}
+
+// E13 — how couples in each country rated one idea. Fetched only when the
+// country sheet opens (enabled), not with the list.
+export function useIdeaCountryStats(dateIdeaId: string | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.dateIdeas.all, dateIdeaId, 'country-stats'],
+    queryFn: async (): Promise<CountryStat[]> => {
+      const { data, error } = await supabase.rpc('get_date_idea_country_stats', {
+        p_date_idea_id: dateIdeaId!,
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!dateIdeaId,
   });
 }
 
@@ -71,7 +104,13 @@ export function useDateIdeas(category?: string) {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (category) {
+      // E11 — 'virtual' is a cross-category flag filter, not a category.
+      // E13 — 'country:NG' filters by origin tag ("see more ideas from Nigeria").
+      if (category === 'virtual') {
+        query = query.eq('is_virtual', true);
+      } else if (category?.startsWith('country:')) {
+        query = query.contains('country_tags', [category.slice('country:'.length)]);
+      } else if (category) {
         query = query.eq('category', category);
       }
 
@@ -194,6 +233,71 @@ export function useSaveDateIdea() {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.coupleDates.byCoupleId(coupleId!),
+      });
+    },
+  });
+}
+
+// G2 — Dates v2: suggest a library idea to your partner (needs 00028).
+// Lands in Our Dates as "Suggested" on both sides; only the partner can
+// Accept (→ saved/planned) or Pass (→ row removed via useRemoveCoupleDate).
+export function useSuggestDateIdea() {
+  const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  const coupleId = useCoupleStore((s) => s.coupleId);
+
+  return useMutation({
+    mutationFn: async (dateIdeaId: string) => {
+      const { data, error } = await supabase
+        .from('couple_dates')
+        .insert({
+          couple_id: coupleId!,
+          date_idea_id: dateIdeaId,
+          suggested_by: user!.id,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.coupleDates.byCoupleId(coupleId!),
+      });
+      notifyPartner({
+        category: 'partner_activity',
+        title: `${getMyFirstName()} suggested a date 💕`,
+        body: 'Take a look and accept if you like it.',
+        route: '/dates',
+      });
+    },
+  });
+}
+
+// Accepting stamps accepted_at → the row becomes a normal saved/planned date.
+export function useAcceptSuggestedDate() {
+  const queryClient = useQueryClient();
+  const coupleId = useCoupleStore((s) => s.coupleId);
+
+  return useMutation({
+    mutationFn: async (coupleDateId: string) => {
+      const { data, error } = await supabase
+        .from('couple_dates')
+        .update({ accepted_at: new Date().toISOString() })
+        .eq('id', coupleDateId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.coupleDates.byCoupleId(coupleId!),
+      });
+      notifyPartner({
+        category: 'partner_activity',
+        title: `${getMyFirstName()} accepted your date idea 🎉`,
+        route: '/dates',
       });
     },
   });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Image, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { View, Image, Pressable, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,6 +12,7 @@ import { pickImages, type PickedImage } from '@/lib/imagePicker';
 import { getErrorMessage } from '@/utils/error';
 import { successHaptic } from '@/lib/haptics';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 export default function MemoryFormModal() {
@@ -122,7 +123,7 @@ export default function MemoryFormModal() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   title: {
     marginBottom: spacing.lg,
   },
@@ -168,4 +169,4 @@ const styles = StyleSheet.create({
   error: {
     marginBottom: spacing.md,
   },
-});
+}));

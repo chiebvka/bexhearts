@@ -1,21 +1,10 @@
 import { useRef, useState } from 'react';
-import {
-  Modal,
-  View,
-  Image,
-  FlatList,
-  ScrollView,
-  Pressable,
-  Share,
-  StyleSheet,
-  useWindowDimensions,
-  type NativeSyntheticEvent,
-  type NativeScrollEvent,
-} from 'react-native';
+import { Modal, View, Image, FlatList, ScrollView, Pressable, Share, useWindowDimensions, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 interface PhotoViewerProps {
@@ -92,7 +81,7 @@ export function PhotoViewer({ imageUrls, initialIndex, visible, onClose }: Photo
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   letterbox: {
     flex: 1,
     backgroundColor: colors.background,
@@ -117,4 +106,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

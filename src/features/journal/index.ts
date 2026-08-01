@@ -5,6 +5,6 @@ export { getCountdown } from './countdown';
 export { buildTimeline } from './timeline';
 export type { TimelineEntry, TimelineEntryType } from './timeline';
 export { PhotoViewer } from './components/PhotoViewer';
-export { buildMemoryImageRows, sortImageUrls } from './images';
+export { sortImageUrls } from './images';
 export { MILESTONE_PRESETS } from './presets';
 export type { MilestonePreset } from './presets';

@@ -1,15 +1,9 @@
 import { useState } from 'react';
-import {
-  TextInput,
-  View,
-  Pressable,
-  StyleSheet,
-  type TextInputProps,
-  type ViewStyle,
-} from 'react-native';
+import { TextInput, View, Pressable, type TextInputProps, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from './Text';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { borderRadius } from '@/theme/borderRadius';
 import { spacing } from '@/theme/spacing';
 import { fonts } from '@/theme/typography';
@@ -87,7 +81,7 @@ export function Input({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   label: {
     marginBottom: spacing.xs,
     color: colors.text.secondary,
@@ -126,4 +120,4 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: spacing.xs,
   },
-});
+}));

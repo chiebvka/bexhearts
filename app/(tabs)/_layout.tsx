@@ -1,12 +1,22 @@
 import { type ComponentProps } from 'react';
-import { View, Text as RNText, StyleSheet } from 'react-native';
+import { View, Text as RNText } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Tabs, Redirect } from 'expo-router';
+import { Tabs, Redirect, useSegments } from 'expo-router';
+import { useEntitlementAccess } from '@/features/subscription/hooks/useEntitlement';
+import { useIsRestoring } from '@tanstack/react-query';
+import { useMyProfile } from '@/api/profiles';
+import { useCoupleStore } from '@/stores/couple.store';
+import { resolveLandingRoute } from '@/features/auth/routeGate';
+import { resolveAccess } from '@/features/subscription/access';
+import { isRevenueCatConfigured } from '@/services/revenuecat/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleRealtime } from '@/api/couples';
+import { useStampTimezone } from '@/hooks/useStampTimezone';
+import { usePartnerLinkedAnalytics } from '@/hooks/usePartnerLinkedAnalytics';
 import { LoadingScreen } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { fonts } from '@/theme/typography';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -54,9 +64,56 @@ export default function TabsLayout() {
   // Couple-wide realtime (devotional progress + couple/streak updates). No-ops
   // until a couple is in context; cleans up on sign-out.
   useCoupleRealtime();
+  // E11 — keep profiles.timezone matched to the device (their-time clock).
+  useStampTimezone();
+  // Phase 7 — the inviter's partner_linked funnel step (once per install).
+  usePartnerLinkedAnalytics();
+
+  // Same decision the root gate makes, applied to every tab entry point.
+  const isRestoring = useIsRestoring();
+  const { data: profile, isLoading: profileLoading, isError } = useMyProfile();
+  const coupleId = useCoupleStore((s) => s.coupleId);
+  const landing = resolveLandingRoute({
+    authLoading: isLoading,
+    isAuthenticated,
+    isRestoring,
+    profileLoading,
+    profileError: isError,
+    profile,
+    coupleId,
+  });
+
+  // F2 — app-wide entitlement gate. Segments let the Profile tab stay open
+  // (restore / delete account) while the rest of the app requires the trial.
+  const segments = useSegments();
+  // RevenueCat OR the comp allowlist (00036) — see useEntitlementAccess.
+  const { isEntitled, isLoading: entitlementLoading } = useEntitlementAccess();
+  const access = resolveAccess({
+    entitlementLoading,
+    isEntitled,
+    monetizationConfigured: isRevenueCatConfigured(),
+    segments: segments as string[],
+  });
 
   if (isLoading) return <LoadingScreen />;
   if (!isAuthenticated) return <Redirect href="/(auth)/sign-in" />;
+  // Onboarding is enforced HERE as well as at app/index.tsx (bug found
+  // 2026-07-26): the root gate only runs when you land on "/", so a deep
+  // link, a notification tap or a restored navigation state dropped a
+  // brand-new account straight into the tabs with no name and no couple.
+  if (landing === 'loading') return <LoadingScreen />;
+  if (landing === 'onboarding') return <Redirect href="/(onboarding)/welcome" />;
+  if (landing === 'partner-invite') {
+    return <Redirect href="/(onboarding)/partner-invite" />;
+  }
+  // F2 — everything behind the trial (owner 2026-07-26). Profile stays open
+  // below so Restore Purchases and account deletion remain reachable.
+  if (access === 'loading') return <LoadingScreen />;
+  if (access === 'paywall') {
+    // placement=gate distinguishes "trial lapsed, blocked mid-app" from the
+    // onboarding price reveal in the funnel — same screen, different story.
+    return <Redirect href="/(onboarding)/paywall?placement=gate" />;
+  }
 
   return (
     <Tabs
@@ -118,16 +175,15 @@ export default function TabsLayout() {
         }}
       />
       {/* Dates is reachable from Home quick actions, not a bottom tab (IA restructure 2026-06-29). */}
-      <Tabs.Screen name="dates" options={{ href: null }} />
     </Tabs>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   pill: {
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 14,
     backgroundColor: colors.primary[100],
   },
-});
+}));

@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
-import { Text, Badge, Button, EmptyState } from '@/components/ui';
-import { SchedulePicker } from '@/features/dates';
-import { useDateIdeaById, useSaveDateIdea } from '@/api/dates';
+import { Text, Badge, Button, EmptyState, BackButton } from '@/components/ui';
+import { SchedulePicker, CountryChips } from '@/features/dates';
+import { useDateIdeaById, useSaveDateIdea, useSuggestDateIdea } from '@/api/dates';
+import { usePartnerProfile } from '@/api/couples';
+import { useCoupleStore } from '@/stores/couple.store';
 import { successHaptic } from '@/lib/haptics';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 // discussion_questions is JSONB (Json) — narrow to a string list defensively.
@@ -21,6 +24,9 @@ export default function DateIdeaDetailScreen() {
   const insets = useSafeAreaInsets();
   const { data: idea, isLoading } = useDateIdeaById(id);
   const saveDateIdea = useSaveDateIdea();
+  const suggestDateIdea = useSuggestDateIdea();
+  const isLinked = useCoupleStore((s) => s.isLinked);
+  const { data: partner } = usePartnerProfile();
   const [scheduledFor, setScheduledFor] = useState<string | null>(null);
 
   if (isLoading) {
@@ -43,6 +49,7 @@ export default function DateIdeaDetailScreen() {
 
   return (
     <ScreenContainer style={{ paddingTop: insets.top + spacing.md }}>
+      <BackButton />
       <View style={styles.badges}>
         <Badge label={idea.category} />
         {idea.estimated_cost && <Badge label={idea.estimated_cost} variant="default" />}
@@ -56,6 +63,14 @@ export default function DateIdeaDetailScreen() {
       <Text variant="bodyLarge" style={styles.description}>
         {idea.description}
       </Text>
+
+      {/* E13 — where this idea comes from. Tap for the context + how couples
+          there rated it (RN has no hover, so the tooltip is a sheet). */}
+      <CountryChips
+        dateIdeaId={idea.id}
+        countryTags={idea.country_tags}
+        contextNote={idea.context_note}
+      />
 
       {idea.scripture_tie && (
         <View style={styles.section}>
@@ -92,11 +107,27 @@ export default function DateIdeaDetailScreen() {
         fullWidth
         style={styles.saveButton}
       />
+
+      {/* G2 Dates v2 — suggest instead of save: partner gets Accept/Pass. */}
+      {isLinked ? (
+        <Button
+          title={`Suggest to ${partner?.full_name?.split(' ')[0] ?? 'your partner'} 💌`}
+          variant="outline"
+          onPress={async () => {
+            successHaptic();
+            await suggestDateIdea.mutateAsync(idea.id);
+            router.back();
+          }}
+          loading={suggestDateIdea.isPending}
+          fullWidth
+          style={styles.suggestButton}
+        />
+      ) : null}
     </ScreenContainer>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   center: {
     flex: 1,
     justifyContent: 'center',
@@ -125,7 +156,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     lineHeight: 22,
   },
+  suggestButton: {
+    marginTop: spacing.sm,
+  },
   saveButton: {
     marginTop: spacing.lg,
   },
-});
+}));

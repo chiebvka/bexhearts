@@ -15,4 +15,7 @@ export const MILESTONE_PRESETS: MilestonePreset[] = [
   { icon: '💒', title: 'Wedding anniversary' },
   { icon: '☕', title: 'Our first date' },
   { icon: '❤️', title: 'First “I love you”' },
+  // E11 — the LDR countdown-to-next-visit rides the existing milestone
+  // machinery (countdown preview + timeline card), no new model needed.
+  { icon: '✈️', title: 'Next visit' },
 ];

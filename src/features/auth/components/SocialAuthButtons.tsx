@@ -3,6 +3,7 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Button, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { useAuth } from '../hooks/useAuth';
 import { isGoogleSignInConfigured } from '../socialAuth';
@@ -84,7 +85,7 @@ export function SocialAuthButtons({ lastUsed }: SocialAuthButtonsProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     width: '100%',
     marginTop: spacing.lg,
@@ -117,4 +118,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     textAlign: 'center',
   },
-});
+}));

@@ -1,7 +1,8 @@
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from './Text';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 
 type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -74,10 +75,10 @@ export function Avatar({ uri, name, size = 'md' }: AvatarProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   fallback: {
     backgroundColor: colors.primary[400],
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+}));

@@ -140,6 +140,13 @@ export type Database = {
             referencedRelation: "couples"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "boundaries_deactivated_by_fkey"
+            columns: ["deactivated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       check_ins: {
@@ -207,6 +214,7 @@ export type Database = {
       }
       couple_dates: {
         Row: {
+          accepted_at: string | null
           completed_at: string | null
           couple_id: string
           created_at: string | null
@@ -218,8 +226,10 @@ export type Database = {
           photo_url: string | null
           rating: number | null
           scheduled_for: string | null
+          suggested_by: string | null
         }
         Insert: {
+          accepted_at?: string | null
           completed_at?: string | null
           couple_id: string
           created_at?: string | null
@@ -231,8 +241,10 @@ export type Database = {
           photo_url?: string | null
           rating?: number | null
           scheduled_for?: string | null
+          suggested_by?: string | null
         }
         Update: {
+          accepted_at?: string | null
           completed_at?: string | null
           couple_id?: string
           created_at?: string | null
@@ -244,6 +256,7 @@ export type Database = {
           photo_url?: string | null
           rating?: number | null
           scheduled_for?: string | null
+          suggested_by?: string | null
         }
         Relationships: [
           {
@@ -258,6 +271,58 @@ export type Database = {
             columns: ["date_idea_id"]
             isOneToOne: false
             referencedRelation: "date_ideas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "couple_dates_suggested_by_fkey"
+            columns: ["suggested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_events: {
+        Row: {
+          couple_id: string
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          ref_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          ref_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          ref_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_events_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "couple_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -316,51 +381,6 @@ export type Database = {
           },
         ]
       }
-      couple_events: {
-        Row: {
-          couple_id: string
-          created_at: string
-          event_type: string
-          id: string
-          metadata: Json
-          ref_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          couple_id: string
-          created_at?: string
-          event_type: string
-          id?: string
-          metadata?: Json
-          ref_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          couple_id?: string
-          created_at?: string
-          event_type?: string
-          id?: string
-          metadata?: Json
-          ref_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "couple_events_couple_id_fkey"
-            columns: ["couple_id"]
-            isOneToOne: false
-            referencedRelation: "couples"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "couple_events_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       couples: {
         Row: {
           country_code: string | null
@@ -370,17 +390,24 @@ export type Database = {
           id: string
           invite_code: string
           invite_code_expires_at: string | null
+          is_long_distance: boolean
           leaderboard_number: number
           leaderboard_opt_in: boolean
           linked_at: string | null
+          longest_streak: number
+          longest_streak_ended_on: string | null
+          longest_streak_started_on: string | null
           partner_a_id: string
           partner_b_id: string | null
           relationship_stage: string | null
           stage_started_on: string | null
           streak_count: number | null
           streak_last_date: string | null
+          streak_started_on: string | null
           subscription_tier: string | null
           timezone: string
+          unlinked_at: string | null
+          unlinked_by: string | null
           updated_at: string | null
         }
         Insert: {
@@ -391,17 +418,24 @@ export type Database = {
           id?: string
           invite_code: string
           invite_code_expires_at?: string | null
+          is_long_distance?: boolean
           leaderboard_number?: number
           leaderboard_opt_in?: boolean
           linked_at?: string | null
+          longest_streak?: number
+          longest_streak_ended_on?: string | null
+          longest_streak_started_on?: string | null
           partner_a_id: string
           partner_b_id?: string | null
           relationship_stage?: string | null
           stage_started_on?: string | null
           streak_count?: number | null
           streak_last_date?: string | null
+          streak_started_on?: string | null
           subscription_tier?: string | null
           timezone?: string
+          unlinked_at?: string | null
+          unlinked_by?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -412,17 +446,24 @@ export type Database = {
           id?: string
           invite_code?: string
           invite_code_expires_at?: string | null
+          is_long_distance?: boolean
           leaderboard_number?: number
           leaderboard_opt_in?: boolean
           linked_at?: string | null
+          longest_streak?: number
+          longest_streak_ended_on?: string | null
+          longest_streak_started_on?: string | null
           partner_a_id?: string
           partner_b_id?: string | null
           relationship_stage?: string | null
           stage_started_on?: string | null
           streak_count?: number | null
           streak_last_date?: string | null
+          streak_started_on?: string | null
           subscription_tier?: string | null
           timezone?: string
+          unlinked_at?: string | null
+          unlinked_by?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -436,6 +477,13 @@ export type Database = {
           {
             foreignKeyName: "couples_partner_b_id_fkey"
             columns: ["partner_b_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "couples_unlinked_by_fkey"
+            columns: ["unlinked_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -475,17 +523,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "date_idea_ratings_date_idea_id_fkey"
-            columns: ["date_idea_id"]
-            isOneToOne: false
-            referencedRelation: "date_ideas"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "date_idea_ratings_couple_id_fkey"
             columns: ["couple_id"]
             isOneToOne: false
             referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "date_idea_ratings_date_idea_id_fkey"
+            columns: ["date_idea_id"]
+            isOneToOne: false
+            referencedRelation: "date_ideas"
             referencedColumns: ["id"]
           },
           {
@@ -501,6 +549,8 @@ export type Database = {
         Row: {
           accessibility_tags: string[]
           category: string
+          context_note: string | null
+          country_tags: string[]
           created_at: string | null
           description: string
           discussion_questions: Json | null
@@ -509,6 +559,7 @@ export type Database = {
           id: string
           is_challenge: boolean | null
           is_premium: boolean | null
+          is_virtual: boolean
           location_type: string
           scripture_tie: string | null
           season: string
@@ -518,6 +569,8 @@ export type Database = {
         Insert: {
           accessibility_tags?: string[]
           category: string
+          context_note?: string | null
+          country_tags?: string[]
           created_at?: string | null
           description: string
           discussion_questions?: Json | null
@@ -526,6 +579,7 @@ export type Database = {
           id?: string
           is_challenge?: boolean | null
           is_premium?: boolean | null
+          is_virtual?: boolean
           location_type?: string
           scripture_tie?: string | null
           season?: string
@@ -535,6 +589,8 @@ export type Database = {
         Update: {
           accessibility_tags?: string[]
           category?: string
+          context_note?: string | null
+          country_tags?: string[]
           created_at?: string | null
           description?: string
           discussion_questions?: Json | null
@@ -543,10 +599,53 @@ export type Database = {
           id?: string
           is_challenge?: boolean | null
           is_premium?: boolean | null
+          is_virtual?: boolean
           location_type?: string
           scripture_tie?: string | null
           season?: string
           stage_fit?: string[]
+          title?: string
+        }
+        Relationships: []
+      }
+      devotional_drafts: {
+        Row: {
+          approved: boolean
+          category: string | null
+          couple_action: string
+          created_at: string | null
+          focus_tags: string[]
+          id: string
+          reflection: string
+          scripture_reference: string
+          scripture_text: string
+          stage_tags: string[]
+          title: string
+        }
+        Insert: {
+          approved?: boolean
+          category?: string | null
+          couple_action: string
+          created_at?: string | null
+          focus_tags?: string[]
+          id?: string
+          reflection: string
+          scripture_reference: string
+          scripture_text: string
+          stage_tags?: string[]
+          title: string
+        }
+        Update: {
+          approved?: boolean
+          category?: string | null
+          couple_action?: string
+          created_at?: string | null
+          focus_tags?: string[]
+          id?: string
+          reflection?: string
+          scripture_reference?: string
+          scripture_text?: string
+          stage_tags?: string[]
           title?: string
         }
         Relationships: []
@@ -605,48 +704,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      devotional_drafts: {
-        Row: {
-          approved: boolean
-          category: string | null
-          couple_action: string
-          created_at: string | null
-          focus_tags: string[]
-          id: string
-          reflection: string
-          scripture_reference: string
-          scripture_text: string
-          stage_tags: string[]
-          title: string
-        }
-        Insert: {
-          approved?: boolean
-          category?: string | null
-          couple_action: string
-          created_at?: string | null
-          focus_tags?: string[]
-          id?: string
-          reflection: string
-          scripture_reference: string
-          scripture_text: string
-          stage_tags?: string[]
-          title: string
-        }
-        Update: {
-          approved?: boolean
-          category?: string | null
-          couple_action?: string
-          created_at?: string | null
-          focus_tags?: string[]
-          id?: string
-          reflection?: string
-          scripture_reference?: string
-          scripture_text?: string
-          stage_tags?: string[]
-          title?: string
-        }
-        Relationships: []
       }
       devotionals: {
         Row: {
@@ -835,6 +892,60 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          category: string
+          couple_id: string | null
+          created_at: string
+          id: string
+          pushed_at: string | null
+          read_at: string | null
+          recipient_id: string
+          route: string | null
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          category: string
+          couple_id?: string | null
+          created_at?: string
+          id?: string
+          pushed_at?: string | null
+          read_at?: string | null
+          recipient_id: string
+          route?: string | null
+          title: string
+        }
+        Update: {
+          body?: string | null
+          category?: string
+          couple_id?: string | null
+          created_at?: string
+          id?: string
+          pushed_at?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          route?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       points_ledger: {
         Row: {
           couple_id: string
@@ -879,16 +990,16 @@ export type Database = {
       }
       prayers: {
         Row: {
+          ai_generated_at: string | null
+          ai_prayer: string | null
+          ai_verse_ref: string | null
+          ai_verse_text: string | null
           answered_at: string | null
           archived_at: string | null
           author_id: string
           body: string | null
           couple_id: string
           created_at: string | null
-          ai_generated_at: string | null
-          ai_prayer: string | null
-          ai_verse_ref: string | null
-          ai_verse_text: string | null
           id: string
           is_answered: boolean | null
           is_archived: boolean | null
@@ -961,6 +1072,7 @@ export type Database = {
           full_name: string | null
           growth_focus: string[]
           id: string
+          notification_prefs: Json
           onboarding_completed: boolean | null
           push_token: string | null
           timezone: string | null
@@ -977,6 +1089,7 @@ export type Database = {
           full_name?: string | null
           growth_focus?: string[]
           id: string
+          notification_prefs?: Json
           onboarding_completed?: boolean | null
           push_token?: string | null
           timezone?: string | null
@@ -993,6 +1106,7 @@ export type Database = {
           full_name?: string | null
           growth_focus?: string[]
           id?: string
+          notification_prefs?: Json
           onboarding_completed?: boolean | null
           push_token?: string | null
           timezone?: string | null
@@ -1008,6 +1122,89 @@ export type Database = {
           },
         ]
       }
+      usage_counters: {
+        Row: {
+          couple_id: string
+          kind: string
+          used: number
+          used_on: string
+        }
+        Insert: {
+          couple_id: string
+          kind: string
+          used?: number
+          used_on: string
+        }
+        Update: {
+          couple_id?: string
+          kind?: string
+          used?: number
+          used_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_counters_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waitlist_signups: {
+        Row: {
+          created_at: string
+          email: string
+          first_visited_at: string | null
+          id: string
+          landing_path: string | null
+          name: string | null
+          referrer: string | null
+          source: string | null
+          stage: string | null
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_visited_at?: string | null
+          id?: string
+          landing_path?: string | null
+          name?: string | null
+          referrer?: string | null
+          source?: string | null
+          stage?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_visited_at?: string | null
+          id?: string
+          landing_path?: string | null
+          name?: string | null
+          referrer?: string | null
+          source?: string | null
+          stage?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1015,37 +1212,94 @@ export type Database = {
     Functions: {
       _hard_delete_account: { Args: { p_user_id: string }; Returns: undefined }
       cancel_account_deletion: { Args: never; Returns: undefined }
-      get_today_devotional: {
+      consume_usage_credit: { Args: { p_kind: string }; Returns: Json }
+      get_activity_daily_counts: {
         Args: never
-        Returns: Database["public"]["Tables"]["devotionals"]["Row"][]
+        Returns: {
+          activity_count: number
+          activity_date: string
+        }[]
       }
-      promote_approved_devotionals: {
+      get_activity_stats: {
         Args: never
-        Returns: number
+        Returns: {
+          activity_type: string
+          best_streak: number
+          last_done: string
+        }[]
       }
       get_date_idea_aggregates: {
         Args: never
         Returns: {
-          date_idea_id: string
           avg_rating: number
+          couples_count: number
+          date_idea_id: string
+        }[]
+      }
+      get_date_idea_country_stats: {
+        Args: { p_date_idea_id: string }
+        Returns: {
+          avg_rating: number
+          country_code: string
           couples_count: number
         }[]
       }
       get_leaderboard: {
         Args: { entry_limit?: number }
         Returns: {
-          rank: number
-          label: string
+          country_code: string
           couple_number: number
-          country_code: string | null
-          points: number
           is_you: boolean
+          label: string
+          points: number
+          rank: number
         }[]
       }
       get_my_couple_id: { Args: never; Returns: string }
+      // ⚠️ THE ONLY HAND-ADDED ENTRY IN THIS FILE. Everything else was
+      // regenerated from the local DB on 2026-07-27 (`supabase gen types
+      // typescript --local`) and matched the hand-maintained version with ZERO
+      // column drift across ~12 sessions of manual edits.
+      //
+      // This one is here because migration 00036 (comp access) has not been
+      // applied yet, so the function doesn't exist in the DB to generate from.
+      // DELETE THIS LINE after the owner applies 00036 and regenerates.
+      has_comp_access: { Args: never; Returns: boolean }
+      get_today_devotional: {
+        Args: never
+        Returns: {
+          category: string | null
+          couple_action: string
+          created_at: string | null
+          focus_tags: string[]
+          id: string
+          is_premium: boolean | null
+          publish_date: string | null
+          reflection: string
+          scripture_reference: string
+          scripture_text: string
+          sequence: number | null
+          stage_tags: string[]
+          title: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "devotionals"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      leave_couple: { Args: never; Returns: undefined }
       link_partner: { Args: { p_invite_code: string }; Returns: string }
+      mask_name: { Args: { name: string }; Returns: string }
       process_due_account_deletions: { Args: never; Returns: number }
+      promote_approved_devotionals: { Args: never; Returns: number }
+      recompute_couple_timezone: {
+        Args: { p_couple_id: string }
+        Returns: undefined
+      }
       request_account_deletion: { Args: never; Returns: string }
+      tz_offset_seconds: { Args: { p_timezone: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never

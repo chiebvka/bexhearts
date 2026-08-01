@@ -7,6 +7,7 @@ import { getProfile, getCouple } from '@/services/supabase/database';
 import {
   initRevenueCat,
   identifyUser as rcIdentify,
+  revenueCatAppUserId,
   logOutRevenueCat,
 } from '@/services/revenuecat/client';
 import {
@@ -16,8 +17,11 @@ import {
 import {
   identify as analyticsIdentify,
   reset as resetAnalytics,
+  resetRetentionState,
 } from '@/services/analytics/events';
 import { queryClient } from '@/api/client';
+import { purgePersistedQueryCache } from '@/lib/persistedStorage';
+import { clearOutbox } from '@/stores/uploads.store';
 import { withTimeout } from '@/utils/withTimeout';
 
 async function bootstrapUserContext(userId: string) {
@@ -98,13 +102,23 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
     // Post-sign-in hydration (profile/couple context + paid-SDK identify).
     // Best-effort: never blocks or reverts the signed-in state.
-    const hydrateSignedIn = async (userId: string, email: string | null) => {
+    const hydrateSignedIn = async (userId: string) => {
       try {
         await bootstrapUserContext(userId);
-        await initRevenueCat(userId);
-        await rcIdentify(userId);
+        // F2 — identify RevenueCat by the COUPLE (billed per couple), so a
+        // purchase by either partner entitles both. bootstrapUserContext has
+        // already hydrated the couple id above; solo users fall back to their
+        // own id and are re-identified on linking.
+        const coupleId = useCoupleStore.getState().coupleId;
+        await initRevenueCat(revenueCatAppUserId(userId, coupleId));
+        await rcIdentify(userId, coupleId);
         identifySuperwallUser(userId);
-        analyticsIdentify(userId, { email });
+        // Phase 7 — UUID only, deliberately no email. The Privacy Policy
+        // carried a "[MINIMIZE AT LAUNCH: review whether email is necessary]"
+        // flag on this exact line; the answer is no. The UUID still joins back
+        // to the DB for support, without an address sitting in a third-party
+        // analytics store alongside religious-practice behaviour.
+        analyticsIdentify(userId);
       } catch {
         // Non-fatal — screens re-fetch their own data.
       }
@@ -120,17 +134,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setSession(session);
 
       if (event === 'SIGNED_IN' && session) {
-        const { id, email } = session.user;
-        setTimeout(() => void hydrateSignedIn(id, email ?? null), 0);
+        const { id } = session.user;
+        setTimeout(() => void hydrateSignedIn(id), 0);
       }
 
       if (event === 'SIGNED_OUT') {
         clear();
         clearCouple();
         queryClient.clear();
+        // H2 — the in-memory clear above isn't enough now that the cache and
+        // the upload queue persist to disk; purge both so nothing of this
+        // user survives for the next one on a shared device.
+        purgePersistedQueryCache();
+        clearOutbox();
         // Purge identity from the paid/analytics SDKs so the next user on this
         // device doesn't inherit it (also covers account-deletion PII cleanup).
         resetAnalytics();
+        // Per-install analytics state (first-open date, once-only funnel
+        // flags) is about the PERSON, not the device — same hygiene rule as
+        // the persisted query cache above.
+        void resetRetentionState();
         resetSuperwallUser();
         void logOutRevenueCat();
       }

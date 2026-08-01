@@ -1,33 +1,40 @@
 import { Redirect } from 'expo-router';
+import { useIsRestoring } from '@tanstack/react-query';
 import { LoadingScreen } from '@/components/ui';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMyProfile } from '@/api/profiles';
 import { useCoupleStore } from '@/stores/couple.store';
+import { resolveLandingRoute } from '@/features/auth/routeGate';
 
 export default function Index() {
-  const isLoading = useAuthStore((s) => s.isLoading);
+  const authLoading = useAuthStore((s) => s.isLoading);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const coupleId = useCoupleStore((s) => s.coupleId);
-  const { data: profile, isLoading: profileLoading } = useMyProfile();
+  // H2·M3 — the persisted cache is read off disk asynchronously; queries
+  // report isLoading:false with no data during that window (see routeGate).
+  const isRestoring = useIsRestoring();
+  const { data: profile, isLoading: profileLoading, isError } = useMyProfile();
 
-  if (isLoading || (isAuthenticated && profileLoading)) {
-    return <LoadingScreen message="Loading..." />;
+  const route = resolveLandingRoute({
+    authLoading,
+    isAuthenticated,
+    isRestoring,
+    profileLoading,
+    profileError: isError,
+    profile,
+    coupleId,
+  });
+
+  switch (route) {
+    case 'loading':
+      return <LoadingScreen message="Loading..." />;
+    case 'sign-in':
+      return <Redirect href="/(auth)/sign-in" />;
+    case 'onboarding':
+      return <Redirect href="/(onboarding)/welcome" />;
+    case 'partner-invite':
+      return <Redirect href="/(onboarding)/partner-invite" />;
+    case 'tabs':
+      return <Redirect href="/(tabs)" />;
   }
-
-  if (!isAuthenticated) {
-    return <Redirect href="/(auth)/sign-in" />;
-  }
-
-  if (!profile?.onboarding_completed) {
-    return <Redirect href="/(onboarding)/welcome" />;
-  }
-
-  // The profile row is the source of truth for couple membership — the store
-  // hydrates asynchronously, and trusting it alone re-routed already-linked
-  // users to partner-invite on cold start (bug 2026-07-04).
-  if (!profile?.couple_id && !coupleId) {
-    return <Redirect href="/(onboarding)/partner-invite" />;
-  }
-
-  return <Redirect href="/(tabs)" />;
 }

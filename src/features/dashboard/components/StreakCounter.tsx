@@ -1,9 +1,10 @@
 import { type ComponentProps } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { getStreakMessage } from '@/lib/dates';
 import { useMyCouple } from '@/api/couples';
@@ -123,12 +124,26 @@ export function StreakCounter({ dayState, partnerName }: StreakCounterProps) {
             {line.text}
           </Text>
         )}
+
+        {/* E8·M3 — nested Pressable captures its own tap; the card itself
+            still opens the Us hub. */}
+        <Pressable
+          onPress={() => router.push('/modal/how-it-works')}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="How streaks work"
+          style={styles.howLink}
+        >
+          <Text variant="labelSmall" color={colors.text.tertiary}>
+            How streaks work
+          </Text>
+        </Pressable>
       </Card>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: {
     alignItems: 'center',
     paddingVertical: spacing.lg,
@@ -183,4 +198,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     textAlign: 'center',
   },
-});
+  howLink: {
+    marginTop: spacing.sm,
+  },
+}));

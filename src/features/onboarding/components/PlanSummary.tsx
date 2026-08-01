@@ -4,6 +4,8 @@ import { Button, Text, Card } from '@/components/ui';
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { useOnboardingStore } from '@/stores/onboarding.store';
+import { ONBOARDING_STREAK_BEATS } from '@/features/how-it-works/content';
+import { trackOnboardingStep } from '@/services/analytics/events';
 import {
   GROWTH_FOCUS_OPTIONS,
   type RelationshipStage,
@@ -32,6 +34,7 @@ export function PlanSummary() {
   const onStart = () => {
     // Hard paywall: the plan reveal leads into the 3-day-trial paywall before
     // partner-invite (F1). The paywall itself no-ops the funnel through in dev.
+    trackOnboardingStep('plan_summary');
     router.push('/(onboarding)/paywall');
   };
 
@@ -57,6 +60,16 @@ export function PlanSummary() {
           ))}
         </Card>
       )}
+
+      {/* E8·M1 — concise streak beats (owner 2026-07-18: brief, no lecture;
+          the full rules live on the How-it-works screen). */}
+      <Card variant="outlined" padding="md" style={styles.beatsCard}>
+        {ONBOARDING_STREAK_BEATS.map((beat) => (
+          <Text key={beat} variant="bodySmall" style={styles.beat}>
+            {beat}
+          </Text>
+        ))}
+      </Card>
 
       <Text variant="bodyMedium" color={colors.text.secondary} style={styles.trialNote}>
         Start with a 3-day free trial.
@@ -84,6 +97,14 @@ const styles = StyleSheet.create({
   },
   card: {
     marginBottom: spacing.lg,
+  },
+  beatsCard: {
+    marginBottom: spacing.lg,
+    gap: spacing.xs,
+  },
+  beat: {
+    // Emoji clip without an explicit lineHeight (2026-07-04g).
+    lineHeight: 20,
   },
   cardLabel: {
     marginBottom: spacing.sm,

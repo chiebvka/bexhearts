@@ -13,6 +13,7 @@ import {
 } from '@/features/dashboard/points';
 import { formatRelativeDate } from '@/lib/dates';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 // D2 (owner locked 2026-07-10) — the transparency screen behind the points
@@ -97,7 +98,7 @@ export default function PointsHistoryModal() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   totalsRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -129,4 +130,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.xl,
   },
-});
+}));

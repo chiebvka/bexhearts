@@ -23,10 +23,20 @@ export async function initRevenueCat(userId?: string) {
   }
 }
 
-export async function identifyUser(userId: string) {
+// F2 — the subscription is billed PER COUPLE ("one plan, two hearts"), so the
+// RevenueCat app-user id is the COUPLE id, not the user id: both partners'
+// devices resolve to the same RevenueCat customer, and a purchase by either
+// one entitles both. Solo users (pre-link) fall back to their own id, and
+// `identifyCouple` is called again on linking so the entitlement follows them
+// into the couple.
+export function revenueCatAppUserId(userId: string, coupleId: string | null): string {
+  return coupleId ? `couple_${coupleId}` : userId;
+}
+
+export async function identifyUser(userId: string, coupleId: string | null = null) {
   try {
     const { default: Purchases } = await import('react-native-purchases');
-    await Purchases.logIn(userId);
+    await Purchases.logIn(revenueCatAppUserId(userId, coupleId));
   } catch {
     // RevenueCat may be intentionally unconfigured in local development.
   }

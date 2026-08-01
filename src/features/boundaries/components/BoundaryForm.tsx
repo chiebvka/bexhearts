@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { View, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, ScrollView, Pressable } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { FormInput } from '@/components/forms/FormInput';
 import { Button, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { borderRadius } from '@/theme/borderRadius';
 import { useCreateBoundary } from '@/api/boundaries';
@@ -182,7 +183,7 @@ export function BoundaryForm({ type, onSuccess }: BoundaryFormProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     padding: spacing.md,
   },
@@ -240,4 +241,4 @@ const styles = StyleSheet.create({
   field: {
     marginBottom: spacing.md,
   },
-});
+}));

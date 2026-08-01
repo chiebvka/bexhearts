@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, TextInput } from 'react-native';
 import { Button, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { borderRadius } from '@/theme/borderRadius';
 import { fonts } from '@/theme/typography';
@@ -42,7 +43,7 @@ export function ReflectionInput({ onSubmit, isLoading, initialValue = '' }: Refl
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     marginVertical: spacing.md,
   },
@@ -62,4 +63,4 @@ const styles = StyleSheet.create({
     minHeight: 100,
     marginBottom: spacing.md,
   },
-});
+}));

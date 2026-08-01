@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, StyleSheet, Pressable, Switch } from 'react-native';
 import { Text, Button, Input } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { borderRadius } from '@/theme/borderRadius';
 import { selectionHaptic } from '@/lib/haptics';
@@ -46,7 +47,7 @@ function RatingRow({ label, value, onChange }: RatingRowProps) {
   );
 }
 
-const ratingStyles = StyleSheet.create({
+const ratingStyles = themedStyles(() => ({
   container: { marginBottom: spacing.lg },
   label: { marginBottom: spacing.sm, color: colors.text.secondary },
   dots: { flexDirection: 'row', gap: spacing.sm },
@@ -63,7 +64,7 @@ const ratingStyles = StyleSheet.create({
     backgroundColor: colors.primary[500],
     borderColor: colors.primary[500],
   },
-});
+}));
 
 // A private note field with an explicit per-field "share with partner" toggle
 // (D3, owner locked 2026-07-10 — honest reflection needs a private default).
@@ -106,7 +107,7 @@ function PrivateNoteField({
   );
 }
 
-const noteStyles = StyleSheet.create({
+const noteStyles = themedStyles(() => ({
   container: { marginBottom: spacing.lg },
   label: { marginBottom: spacing.sm, color: colors.text.secondary },
   shareRow: {
@@ -115,7 +116,7 @@ const noteStyles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   shareLabel: { flex: 1, marginRight: spacing.sm },
-});
+}));
 
 interface CheckInFormProps {
   onSuccess?: () => void;

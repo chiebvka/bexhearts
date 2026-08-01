@@ -1,4 +1,4 @@
-import { View, FlatList, Switch, StyleSheet } from 'react-native';
+import { View, FlatList, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { Text, Card, ModalHeader, EmptyState, LoadingScreen } from '@/components/ui';
@@ -6,6 +6,7 @@ import { useLeaderboard, useSetLeaderboardOptIn } from '@/api/points';
 import { useMyCouple } from '@/api/couples';
 import { countryFlag } from '@/lib/flags';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 // Global standings (owner decision 2026-07-05). Privacy first: couples appear
@@ -78,7 +79,7 @@ export default function LeaderboardModal() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   intro: {
     marginBottom: spacing.md,
   },
@@ -118,4 +119,4 @@ const styles = StyleSheet.create({
   labelWrap: {
     flex: 1,
   },
-});
+}));

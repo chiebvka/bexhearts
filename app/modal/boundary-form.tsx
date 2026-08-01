@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
@@ -8,6 +8,7 @@ import { Text, PremiumGate, ModalHeader } from '@/components/ui';
 import { BoundaryForm } from '@/features/boundaries';
 import { PAYWALL_EVENTS } from '@/constants/entitlements';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { borderRadius } from '@/theme/borderRadius';
 import type { BoundaryType } from '@/types/common';
@@ -55,7 +56,7 @@ export default function BoundaryFormModal() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   tabs: {
     flexDirection: 'row',
     marginHorizontal: spacing.md,
@@ -73,4 +74,4 @@ const styles = StyleSheet.create({
   tabActive: {
     backgroundColor: colors.primary[500],
   },
-});
+}));

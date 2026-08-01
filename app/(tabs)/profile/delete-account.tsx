@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet, Alert, Linking, Platform } from 'react-native';
+import { View, Alert, Linking, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, BackButton, Button, Input, Card } from '@/components/ui';
@@ -7,6 +7,7 @@ import { KeyboardAvoid } from '@/components/layout/KeyboardAvoid';
 import { useAuth } from '@/features/auth';
 import { useAuthStore } from '@/stores/auth.store';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 // Where users manage/cancel store subscriptions (deleting the account does NOT).
@@ -118,7 +119,7 @@ export default function DeleteAccountScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     paddingHorizontal: spacing.lg,
@@ -147,4 +148,4 @@ const styles = StyleSheet.create({
   button: {
     marginBottom: spacing.sm,
   },
-});
+}));

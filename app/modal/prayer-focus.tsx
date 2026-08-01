@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -13,14 +13,17 @@ import {
 } from '@/api/prayers';
 import { useMyProfile } from '@/api/profiles';
 import { logActivity } from '@/api/activity';
+import { notifyPartner, getMyFirstName } from '@/api/notifications';
 import {
   buildFocusQueue,
   isCrisisText,
+  getComposeLimitMessage,
   SESSION_DURATIONS_MINUTES,
 } from '@/features/prayer/focus';
 import { useAuthStore } from '@/stores/auth.store';
 import { successHaptic, selectionHaptic } from '@/lib/haptics';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { SUPPORT_EMAIL } from '@/constants/app';
 
@@ -72,6 +75,13 @@ export default function PrayerFocusModal() {
   const finish = () => {
     successHaptic();
     void logActivity('prayer_session');
+    // G2/E3 — a finished session IS "praying for you": tell the partner
+    // (debounced server-side; generic copy, never prayer content).
+    notifyPartner({
+      category: 'partner_activity',
+      title: `${getMyFirstName()} just prayed for your requests 🙏`,
+      route: '/(tabs)/connect/prayers',
+    });
     setPhase('done');
   };
 
@@ -177,6 +187,14 @@ export default function PrayerFocusModal() {
             {`This one deserves more than an app. If you or someone you love is in danger or struggling, reach out to someone you trust, a pastor, or a crisis line — and we're at ${SUPPORT_EMAIL}.`}
           </Text>
         </Card>
+      ) : composed?.limited ? (
+        /* E9 — cap reached: a gentle nudge toward praying together, styled
+           exactly like the other cards (owner: never error styling). */
+        <Card variant="outlined" padding="md" style={styles.aiCard}>
+          <Text variant="bodyMedium" color={colors.text.secondary}>
+            {getComposeLimitMessage(composed.limited)}
+          </Text>
+        </Card>
       ) : composed?.unsuitable ? (
         <Card variant="outlined" padding="md" style={styles.aiCard}>
           <Text variant="bodyMedium" color={colors.text.secondary}>
@@ -231,7 +249,7 @@ export default function PrayerFocusModal() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   doneWrap: {
     flex: 1,
     alignItems: 'center',
@@ -310,4 +328,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     padding: spacing.sm,
   },
-});
+}));

@@ -1,5 +1,15 @@
 import { renderHook, act } from '@testing-library/react-native';
 
+jest.mock('@/api/appleRevoke', () => ({
+  storeAppleCredential: jest.fn(),
+  revokeAppleCredential: jest.fn(),
+}));
+jest.mock('@/services/notifications/client', () => ({
+  clearPushToken: jest.fn(),
+  registerPushToken: jest.fn(),
+  requestNotificationPermission: jest.fn(),
+}));
+
 jest.mock('expo-router', () => ({
   router: { replace: jest.fn(), push: jest.fn() },
 }));

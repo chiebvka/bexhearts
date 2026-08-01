@@ -3,7 +3,9 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, Button } from '@/components/ui';
 import { SignOutLink } from '@/features/auth';
+import { trackOnboardingStep } from '@/services/analytics/events';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { fonts } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 
@@ -84,7 +86,10 @@ export default function WelcomeScreen() {
       <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>
         <Button
           title="Get Started"
-          onPress={() => router.push('/(onboarding)/profile-setup')}
+          onPress={() => {
+            trackOnboardingStep('welcome');
+            router.push('/(onboarding)/profile-setup');
+          }}
           fullWidth
         />
         <SignOutLink />
@@ -93,7 +98,7 @@ export default function WelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     paddingHorizontal: spacing.lg,
@@ -177,4 +182,4 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: spacing.md,
   },
-});
+}));

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from './keys';
+import { notifyPartner, getMyFirstName } from './notifications';
 import { supabase } from '@/services/supabase/client';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
@@ -102,6 +103,13 @@ export function useSubmitCheckIn() {
         queryKey: queryKeys.checkIns.weekComparison(coupleId!, getWeekOf()),
       });
       void logActivity('check_in');
+      // G2 — the reveal needs both: nudge the partner to take their turn.
+      notifyPartner({
+        category: 'partner_activity',
+        title: `${getMyFirstName()} finished their weekly check-in 💬`,
+        body: 'Your turn — the reveal opens once you both check in.',
+        route: '/(tabs)/connect',
+      });
     },
   });
 }

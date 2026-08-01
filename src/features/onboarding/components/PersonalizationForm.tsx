@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { Button, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { useOnboardingStore } from '@/stores/onboarding.store';
 import { useUpdateProfile } from '@/api/profiles';
+import { trackOnboardingStep } from '@/services/analytics/events';
 import { GROWTH_FOCUS_OPTIONS, type GrowthFocus } from '../schemas';
 
 export function PersonalizationForm() {
@@ -26,6 +28,7 @@ export function PersonalizationForm() {
     try {
       await updateProfile.mutateAsync({ growth_focus: selected });
       setGrowthFocus(selected);
+      trackOnboardingStep('personalize');
       router.push('/(onboarding)/plan-summary');
     } catch {
       setError('Something went wrong. Please try again.');
@@ -81,7 +84,7 @@ export function PersonalizationForm() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
   },
@@ -113,4 +116,4 @@ const styles = StyleSheet.create({
   button: {
     marginTop: spacing.xl,
   },
-});
+}));

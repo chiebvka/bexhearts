@@ -1,6 +1,7 @@
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { borderRadius } from '@/theme/borderRadius';
 import { getSchedulePresets } from '../schedulePresets';
@@ -42,7 +43,7 @@ export function SchedulePicker({ value, onChange }: SchedulePickerProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   label: {
     marginBottom: spacing.sm,
   },
@@ -63,4 +64,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[500],
     borderColor: colors.primary[500],
   },
-});
+}));

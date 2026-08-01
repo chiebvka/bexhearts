@@ -1,4 +1,4 @@
-import { View, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +16,7 @@ import { usePartnerProfile } from '@/api/couples';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { successHaptic } from '@/lib/haptics';
 
@@ -121,7 +122,7 @@ export default function DevotionalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   prayerTime: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -156,4 +157,4 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     lineHeight: 26,
   },
-});
+}));

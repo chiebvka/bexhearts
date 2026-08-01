@@ -43,7 +43,9 @@ export async function logActivity(type: ActivityType): Promise<void> {
         ignoreDuplicates: true,
       }
     );
-    queryClient.invalidateQueries({ queryKey: queryKeys.activity.byCoupleId(coupleId) });
+    // Invalidate the whole activity family — the 120-day log plus the E10
+    // all-time stats/daily-counts aggregates all shift with a new row.
+    queryClient.invalidateQueries({ queryKey: queryKeys.activity.all });
     // The DB trigger on activity_log just awarded points — refresh every
     // points surface so the Us hub total can't drift from the leaderboard (D1).
     queryClient.invalidateQueries({ queryKey: queryKeys.points.all });
@@ -68,5 +70,48 @@ export function useActivityLog() {
       return data ?? [];
     },
     enabled: !!coupleId,
+  });
+}
+
+export interface ActivityStat {
+  activity_type: string;
+  best_streak: number;
+  last_done: string;
+}
+
+// E10 — all-time per-activity best streak + last-done ("best 14 · last Jul 12").
+// Server-side because the log query above only fetches 120 days.
+export function useActivityStats() {
+  const coupleId = useCoupleStore((s) => s.coupleId);
+
+  return useQuery({
+    queryKey: queryKeys.activity.stats(coupleId!),
+    queryFn: async (): Promise<ActivityStat[]> => {
+      const { data, error } = await supabase.rpc('get_activity_stats');
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!coupleId,
+  });
+}
+
+export interface ActivityDailyCount {
+  activity_date: string;
+  activity_count: number;
+}
+
+// E10 — all-time daily counts for the heatmap's "All" filter. One row per
+// active day, so the payload stays small; fetched only when All is selected.
+export function useActivityDailyCounts(enabled: boolean) {
+  const coupleId = useCoupleStore((s) => s.coupleId);
+
+  return useQuery({
+    queryKey: queryKeys.activity.dailyCounts(coupleId!),
+    queryFn: async (): Promise<ActivityDailyCount[]> => {
+      const { data, error } = await supabase.rpc('get_activity_daily_counts');
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!coupleId && enabled,
   });
 }

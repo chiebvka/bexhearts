@@ -9,6 +9,9 @@ export function loadImagePicker() {
 export interface PickedImage {
   uri: string;
   contentType: string;
+  // Dimensions when the picker reports them — lets compression skip upscaling.
+  width?: number;
+  height?: number;
 }
 
 // Multi-select photos from the library. Returns [] when the user cancels.
@@ -34,5 +37,7 @@ export async function pickImages(selectionLimit = 10): Promise<PickedImage[]> {
   return result.assets.map((asset) => ({
     uri: asset.uri,
     contentType: asset.mimeType ?? 'image/jpeg',
+    width: asset.width,
+    height: asset.height,
   }));
 }

@@ -1,5 +1,15 @@
 import { renderHook, act } from '@testing-library/react-native';
 
+jest.mock('@/api/appleRevoke', () => ({
+  storeAppleCredential: jest.fn(),
+  revokeAppleCredential: jest.fn(),
+}));
+jest.mock('@/services/notifications/client', () => ({
+  clearPushToken: jest.fn(),
+  registerPushToken: jest.fn(),
+  requestNotificationPermission: jest.fn(),
+}));
+
 jest.mock('expo-router', () => ({
   router: { replace: jest.fn(), push: jest.fn() },
 }));
@@ -110,5 +120,85 @@ describe('useAuth.deleteAccount (7-day grace request)', () => {
     expect(mockAuth.signOut).not.toHaveBeenCalled();
     expect(result.current.error).toBeTruthy();
     expect(ok).toBe(false);
+  });
+});
+
+// App Store Guideline 5.1.1(v): an app offering Sign in with Apple must revoke
+// the user's Apple tokens when they delete their account. Rejection risk, so
+// the ordering and the failure behaviour are both pinned here.
+describe('useAuth.deleteAccount — Apple token revocation (5.1.1(v))', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { revokeAppleCredential } = require('@/api/appleRevoke') as {
+    revokeAppleCredential: MockFn;
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockAuth.requestAccountDeletion.mockResolvedValue({ error: null });
+    mockAuth.signOut.mockResolvedValue({ error: null });
+    revokeAppleCredential.mockResolvedValue(true);
+  });
+
+  it('revokes the Apple tokens when an account is deleted', async () => {
+    const { result } = renderHook(() => useAuth());
+    await act(async () => {
+      await result.current.deleteAccount();
+    });
+
+    expect(revokeAppleCredential).toHaveBeenCalledTimes(1);
+  });
+
+  it('revokes BEFORE requesting deletion, while the session is still valid', async () => {
+    // The edge function identifies the user from their JWT. Revoking after
+    // sign-out would be unauthenticated and silently do nothing.
+    const order: string[] = [];
+    revokeAppleCredential.mockImplementation(async () => {
+      order.push('revoke');
+      return true;
+    });
+    mockAuth.requestAccountDeletion.mockImplementation(async () => {
+      order.push('request-deletion');
+      return { error: null };
+    });
+    mockAuth.signOut.mockImplementation(async () => {
+      order.push('sign-out');
+      return { error: null };
+    });
+
+    const { result } = renderHook(() => useAuth());
+    await act(async () => {
+      await result.current.deleteAccount();
+    });
+
+    expect(order).toEqual(['revoke', 'request-deletion', 'sign-out']);
+  });
+
+  it('still deletes the account when revocation fails', async () => {
+    // Apple being unreachable is a far smaller problem than a user who cannot
+    // delete their account. The server sweep retries the revoke.
+    revokeAppleCredential.mockResolvedValue(false);
+
+    const { result } = renderHook(() => useAuth());
+    let outcome: boolean | undefined;
+    await act(async () => {
+      outcome = await result.current.deleteAccount();
+    });
+
+    expect(outcome).toBe(true);
+    expect(mockAuth.requestAccountDeletion).toHaveBeenCalledTimes(1);
+    expect(mockRouter.replace).toHaveBeenCalledWith('/(auth)/sign-in');
+  });
+
+  it('still deletes the account when revocation throws outright', async () => {
+    revokeAppleCredential.mockRejectedValue(new Error('network down'));
+
+    const { result } = renderHook(() => useAuth());
+    let outcome: boolean | undefined;
+    await act(async () => {
+      outcome = await result.current.deleteAccount();
+    });
+
+    expect(outcome).toBe(true);
+    expect(mockAuth.requestAccountDeletion).toHaveBeenCalledTimes(1);
   });
 });

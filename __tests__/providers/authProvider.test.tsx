@@ -37,6 +37,7 @@ jest.mock('@/services/superwall/client', () => ({
 jest.mock('@/services/analytics/events', () => ({
   identify: jest.fn(),
   reset: jest.fn(),
+  resetRetentionState: jest.fn(),
 }));
 jest.mock('@/api/client', () => ({
   queryClient: { clear: jest.fn() },

@@ -67,7 +67,7 @@ export async function getCouple(coupleId: string): Promise<Couple | null> {
 
 export async function createCouple(
   partnerAId: string,
-  options?: Pick<CoupleInsert, 'relationship_stage' | 'stage_started_on'>
+  options?: Pick<CoupleInsert, 'relationship_stage' | 'stage_started_on' | 'is_long_distance'>
 ): Promise<Couple> {
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 48);
@@ -82,6 +82,8 @@ export async function createCouple(
         invite_code_expires_at: expiresAt.toISOString(),
         relationship_stage: options?.relationship_stage ?? null,
         stage_started_on: options?.stage_started_on ?? null,
+        // E11 — captured with the relationship stage in onboarding.
+        is_long_distance: options?.is_long_distance ?? false,
         // Anchor the streak's "day" to the creator's timezone (D6).
         timezone: getDeviceTimeZone(),
       })

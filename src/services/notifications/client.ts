@@ -30,6 +30,21 @@ export async function requestNotificationPermission(): Promise<boolean> {
   return finalStatus === 'granted';
 }
 
+// G1 push-token hygiene: without this, a shared or handed-down device keeps
+// receiving the PREVIOUS user's pushes after sign-out/deletion. Best-effort —
+// never blocks the sign-out itself.
+export async function clearPushToken(userId: string): Promise<void> {
+  try {
+    await supabase
+      .from('profiles')
+      .update({ push_token: null })
+      .eq('id', userId);
+  } catch {
+    // Offline sign-out etc. — the dead token gets pruned server-side on the
+    // next send anyway (DeviceNotRegistered handling in send-notification).
+  }
+}
+
 export async function registerPushToken(userId: string): Promise<string | null> {
   if (!Device.isDevice) return null;
 

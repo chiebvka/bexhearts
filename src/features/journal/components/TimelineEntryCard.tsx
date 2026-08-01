@@ -1,9 +1,12 @@
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { formatRelativeDate } from '@/lib/dates';
+import { usePendingUploads } from '@/stores/uploads.store';
+import { pendingUploadLabel } from '@/features/uploads/outbox';
 import { getEntryMeta } from '../entryMeta';
 import { getCountdown } from '../countdown';
 import { FannedPolaroids } from './FannedPolaroids';
@@ -20,6 +23,14 @@ interface TimelineEntryCardProps {
 export function TimelineEntryCard({ entry, onPress }: TimelineEntryCardProps) {
   const meta = getEntryMeta(entry.type);
   const isMilestone = entry.type === 'milestone';
+  // H2·M2 — photos still in the upload outbox for this memory ('' → 0).
+  const memoryId =
+    entry.type === 'memory' ? (entry.ref as { id: string }).id : '';
+  const pendingUploads = usePendingUploads(memoryId);
+  const pendingLabel = pendingUploadLabel(
+    pendingUploads,
+    pendingUploads + (entry.imageUrls?.length ?? 0)
+  );
 
   return (
     <View style={styles.row}>
@@ -53,13 +64,22 @@ export function TimelineEntryCard({ entry, onPress }: TimelineEntryCardProps) {
           {entry.imageUrls && entry.imageUrls.length > 0 ? (
             <FannedPolaroids imageUrls={entry.imageUrls} />
           ) : null}
+
+          {pendingLabel ? (
+            <View style={styles.pendingRow}>
+              <Ionicons name="cloud-upload-outline" size={13} color={colors.text.tertiary} />
+              <Text variant="labelSmall" color={colors.text.tertiary}>
+                {pendingLabel}
+              </Text>
+            </View>
+          ) : null}
         </Card>
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -93,4 +113,10 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: spacing.xs,
   },
-});
+  pendingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+}));

@@ -111,6 +111,22 @@ export function subscribeToJournal(coupleId: string, onUpdate: JournalRealtimeCa
     .subscribe();
 }
 
+// G1 — the Home bell goes live the moment a notification row lands.
+export function subscribeToNotifications(userId: string, onUpdate: RealtimeCallback) {
+  return freshChannel(`notifications-${userId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `recipient_id=eq.${userId}`,
+      },
+      onUpdate
+    )
+    .subscribe();
+}
+
 export function unsubscribeAll() {
   supabase.removeAllChannels();
 }

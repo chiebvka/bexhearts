@@ -1,10 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { queryKeys } from './keys';
+import { notifyPartner, getMyFirstName } from './notifications';
 import { supabase } from '@/services/supabase/client';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
 import { logActivity } from './activity';
+import { trackDevotionalCompleted } from '@/services/analytics/events';
 import type { DevotionalProgressInsert } from '@/types/api';
 
 export function useTodayDevotional() {
@@ -101,6 +103,16 @@ export function useCompleteDevotional() {
       // The streak trigger may have bumped the couple row — refresh it (D6).
       queryClient.invalidateQueries({ queryKey: queryKeys.couple.mine() });
       void logActivity('devotional');
+      // Phase 7 — the funnel's activation step: the daily habit actually
+      // happening is what a retained subscription is made of.
+      trackDevotionalCompleted();
+      // G2 — the streak's own nudge: one partner in, the other invited.
+      notifyPartner({
+        category: 'partner_activity',
+        title: `${getMyFirstName()} finished today's devotional 🔥`,
+        body: 'Finish yours to keep the flame together.',
+        route: '/(tabs)/devotional',
+      });
     },
   });
 }

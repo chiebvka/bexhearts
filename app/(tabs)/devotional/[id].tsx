@@ -1,11 +1,12 @@
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
-import { Text, EmptyState } from '@/components/ui';
+import { Text, EmptyState, BackButton } from '@/components/ui';
 import { ScriptureBlock } from '@/features/devotional';
 import { useDevotionalById } from '@/api/devotionals';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 export default function DevotionalDetailScreen() {
@@ -27,6 +28,7 @@ export default function DevotionalDetailScreen() {
 
   return (
     <ScreenContainer style={{ paddingTop: insets.top + spacing.md }}>
+      <BackButton />
       <Text variant="displayMedium" style={styles.title}>
         {devotional.title}
       </Text>
@@ -43,7 +45,7 @@ export default function DevotionalDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   center: {
     flex: 1,
     justifyContent: 'center',
@@ -57,4 +59,4 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     lineHeight: 26,
   },
-});
+}));

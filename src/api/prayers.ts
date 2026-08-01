@@ -5,6 +5,7 @@ import { supabase } from '@/services/supabase/client';
 import { subscribeToPrayers } from '@/services/supabase/realtime';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
+import { notifyPartner, getMyFirstName } from './notifications';
 import type { PrayerInsert, PrayerUpdate } from '@/types/api';
 
 export function usePrayers() {
@@ -61,6 +62,8 @@ export function useComposePrayer() {
       verseText?: string | null;
       flagged?: boolean;
       unsuitable?: boolean;
+      // E9: couple hit the composition cap (00026) — 'day' or 'month'.
+      limited?: 'day' | 'month';
     }> => {
       const { data, error } = await supabase.functions.invoke('compose-prayer', {
         body: { prayerId },
@@ -114,10 +117,18 @@ export function useCreatePrayer() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.prayers.byCoupleId(coupleId!),
       });
+      // G2 — generic wording only; the prayer's content never rides along.
+      if (!created.is_private) {
+        notifyPartner({
+          category: 'partner_activity',
+          title: `${getMyFirstName()} added a shared prayer 🙏`,
+          route: '/(tabs)/connect/prayers',
+        });
+      }
     },
   });
 }
@@ -135,12 +146,20 @@ export function useUpdatePrayer() {
         .select()
         .single();
       if (error) throw error;
-      return data;
+      return { data, updates };
     },
-    onSuccess: () => {
+    onSuccess: ({ data, updates }) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.prayers.byCoupleId(coupleId!),
       });
+      // G2 — answered celebration reaches the partner (shared prayers only).
+      if (updates.is_answered && !data.is_private) {
+        notifyPartner({
+          category: 'partner_activity',
+          title: 'A prayer was answered 🙌',
+          route: '/(tabs)/connect/prayers',
+        });
+      }
     },
   });
 }

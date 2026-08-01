@@ -1,7 +1,8 @@
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { borderRadius } from '@/theme/borderRadius';
 import { shadows } from '@/theme/shadows';
@@ -11,7 +12,7 @@ const actions = [
   { label: 'Devotional', icon: '📖', route: '/(tabs)/devotional' as const },
   { label: 'Pray', icon: '🙏', route: '/modal/prayer-form' as const },
   { label: 'Check-In', icon: '💬', route: '/modal/check-in-form' as const },
-  { label: 'Date Ideas', icon: '💝', route: '/(tabs)/dates' as const },
+  { label: 'Date Ideas', icon: '💝', route: '/dates' as const },
 ];
 
 export function QuickActions() {
@@ -38,7 +39,7 @@ export function QuickActions() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -64,4 +65,4 @@ const styles = StyleSheet.create({
     // iOS clips their tops (the sheared-heart bug, 2026-07-04).
     lineHeight: 32,
   },
-});
+}));

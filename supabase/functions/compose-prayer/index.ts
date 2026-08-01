@@ -80,9 +80,30 @@ Deno.serve(async (req) => {
     });
   }
 
-  const request = [prayer.title, prayer.body].filter(Boolean).join(' — ');
+  // Cap what we send to the model — cost + abuse control (E9).
+  const request = [prayer.title, prayer.body]
+    .filter(Boolean)
+    .join(' — ')
+    .slice(0, 1000);
   if (CRISIS_PATTERNS.test(request)) {
     return json({ flagged: true }, 200);
+  }
+
+  // Rate limit (E9, owner-locked 2026-07-18): 40 compositions/day and
+  // 150/month per COUPLE, enforced by the 00026 SECURITY DEFINER gate.
+  // Runs AFTER the cache/crisis checks so free paths are never charged, and
+  // DEGRADES OPEN if the migration isn't applied yet.
+  try {
+    const { data: gate, error: gateError } = await supabase.rpc(
+      'consume_usage_credit',
+      { p_kind: 'compose_prayer' }
+    );
+    if (!gateError && gate && gate.allowed === false) {
+      const scope = gate.scope === 'month' ? 'month' : 'day';
+      return json({ limited: scope }, 200);
+    }
+  } catch {
+    // Gate unavailable (migration not applied) — proceed rather than break.
   }
 
   const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {

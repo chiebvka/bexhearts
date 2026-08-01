@@ -1,6 +1,7 @@
-import { ScrollView, View, StyleSheet, type ViewStyle } from 'react-native';
+import { ScrollView, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 interface ScreenContainerProps {
@@ -41,7 +42,7 @@ export function ScreenContainer({
   return <View style={[styles.scroll, contentStyle]}>{children}</View>;
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   scroll: {
     flex: 1,
     backgroundColor: colors.background,
@@ -53,4 +54,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
   },
-});
+}));

@@ -9,12 +9,21 @@ export type NotificationType =
   | 'date_reminder';
 
 interface NotificationData {
-  type: NotificationType;
+  type?: NotificationType;
   id?: string;
+  // G1: send-notification puts the in-app path here — the modern way.
+  route?: string;
 }
 
 export function handleNotificationResponse(response: Notifications.NotificationResponse) {
   const data = response.notification.request.content.data as unknown as NotificationData;
+
+  // G1 pushes carry an explicit route; the legacy type switch stays as a
+  // fallback for anything older.
+  if (typeof data.route === 'string' && data.route.startsWith('/')) {
+    router.push(data.route as never);
+    return;
+  }
 
   switch (data.type) {
     case 'devotional_reminder':
@@ -30,7 +39,7 @@ export function handleNotificationResponse(response: Notifications.NotificationR
       router.push('/modal/check-in-form');
       break;
     case 'date_reminder':
-      router.push('/(tabs)/dates');
+      router.push('/dates');
       break;
   }
 }

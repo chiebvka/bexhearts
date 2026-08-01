@@ -1,6 +1,7 @@
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { Card, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import type { CheckIn } from '@/types/api';
 import { getVisiblePartnerNotes, type CheckInComparisonState } from '../comparison';
@@ -142,7 +143,7 @@ function PartnerNotes({ partner, name }: { partner?: CheckIn | null; name: strin
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: {
     marginTop: spacing.lg,
   },
@@ -177,4 +178,4 @@ const styles = StyleSheet.create({
   noteText: {
     lineHeight: 21,
   },
-});
+}));

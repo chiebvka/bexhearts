@@ -14,6 +14,18 @@ export function isCrisisText(text: string | null | undefined): boolean {
 
 export const SESSION_DURATIONS_MINUTES = [3, 5, 10] as const;
 
+// E9 (owner-locked 2026-07-18): when the couple hits the composition cap
+// (40/day, 150/month — enforced server-side by 00026), the message is a
+// gentle nudge toward praying together, never an error.
+export type ComposeLimitScope = 'day' | 'month';
+
+export function getComposeLimitMessage(scope: ComposeLimitScope): string {
+  if (scope === 'month') {
+    return "You've reached this month's composed prayers 💜 Your own words count just as much — keep praying together.";
+  }
+  return "You've composed a lot of prayers today 💜 They'll be here again tomorrow — for now, maybe pray this one together in your own words.";
+}
+
 // Active (not answered, not archived) prayers, shared first then my personal,
 // each group oldest first — you pray longest-standing requests first.
 export function buildFocusQueue(

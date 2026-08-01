@@ -1,10 +1,11 @@
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { Text, Card, ModalHeader } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 const options = [
@@ -54,7 +55,7 @@ export default function JournalAddModal() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   title: {
     marginBottom: spacing.lg,
   },
@@ -76,4 +77,4 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: spacing.xs,
   },
-});
+}));

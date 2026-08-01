@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, Button } from '@/components/ui';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { InviteCodeCard, PartnerLinkForm, useInviteCode } from '@/features/onboarding';
+import { PARTNER_INVITE_BEAT } from '@/features/how-it-works/content';
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { useState } from 'react';
@@ -23,6 +24,10 @@ export default function PartnerInviteScreen() {
         {inviteCode ? (
           <>
             <InviteCodeCard code={inviteCode} />
+            {/* E8·M1 — answers "does my streak count while I wait?" (yes). */}
+            <Text variant="bodySmall" color={colors.text.secondary} style={styles.soloBeat}>
+              {PARTNER_INVITE_BEAT}
+            </Text>
             <Button
               title="Generate a new code"
               onPress={regenerateCode}
@@ -124,6 +129,12 @@ const styles = StyleSheet.create({
   },
   switchButton: {
     marginTop: spacing.lg,
+  },
+  soloBeat: {
+    marginTop: spacing.md,
+    textAlign: 'center',
+    // Emoji clip without an explicit lineHeight (2026-07-04g).
+    lineHeight: 20,
   },
   skipButton: {
     marginTop: spacing.xl,

@@ -1,16 +1,19 @@
 import { useMemo, useState } from 'react';
-import { View, SectionList, Pressable, StyleSheet } from 'react-native';
+import { View, SectionList, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text, Button, EmptyState, LoadingScreen } from '@/components/ui';
+import { Text, Button, EmptyState, LoadingScreen, BackButton } from '@/components/ui';
 import { PrayerItem, partitionPrayers } from '@/features/prayer';
 import { usePrayers, useUpdatePrayer, usePrayersRealtime } from '@/api/prayers';
+import { notifyPartner, getMyFirstName } from '@/api/notifications';
+import { useCoupleStore } from '@/stores/couple.store';
 import { useMyProfile } from '@/api/profiles';
 import { usePartnerProfile } from '@/api/couples';
 import { useAuthStore } from '@/stores/auth.store';
 import { useUIStore } from '@/stores/ui.store';
 import { successHaptic, lightHaptic } from '@/lib/haptics';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import type { Prayer } from '@/types/api';
 
@@ -21,6 +24,7 @@ export default function PrayersScreen() {
   const { data: prayers, isLoading } = usePrayers();
   const { data: profile } = useMyProfile();
   const { data: partner } = usePartnerProfile();
+  const isLinked = useCoupleStore((s) => s.isLinked);
   const updatePrayer = useUpdatePrayer();
   // Hybrid IA (2026-07-04): the wall splits Ours (shared) | Mine (personal).
   const [scope, setScope] = useState<'ours' | 'mine'>('ours');
@@ -67,6 +71,7 @@ export default function PrayersScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
+      <BackButton style={styles.back} />
       <View style={styles.header}>
         <Text variant="headlineLarge">Prayers</Text>
         <Button
@@ -107,6 +112,29 @@ export default function PrayersScreen() {
           onPress={() => router.push('/modal/prayer-focus')}
         />
       </View>
+
+      {/* G2/E3 — the deliberate one-tap "praying for you" (owner-approved).
+          Debounced server-side, so tap-happy moments stay one gentle push. */}
+      {isLinked ? (
+        <Pressable
+          onPress={() => {
+            lightHaptic();
+            notifyPartner({
+              category: 'partner_activity',
+              title: `${getMyFirstName()} is praying for you right now 🙏`,
+              route: '/(tabs)/connect/prayers',
+            });
+            showToast(`${partner?.full_name?.split(' ')[0] ?? 'Your partner'} will know you're praying 💜`, 'success');
+          }}
+          style={styles.prayingForYou}
+          hitSlop={8}
+          accessibilityRole="button"
+        >
+          <Text variant="labelMedium" color={colors.text.link}>
+            🙏 Tell {partner?.full_name?.split(' ')[0] ?? 'your partner'} you&apos;re praying for them
+          </Text>
+        </Pressable>
+      ) : null}
 
       <SectionList
         sections={sections}
@@ -159,10 +187,15 @@ export default function PrayersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  // Edge-to-edge screen (sections pad themselves) — inset the chevron so it
+  // aligns with the title rather than hugging the screen edge.
+  back: {
+    paddingLeft: spacing.md,
   },
   header: {
     flexDirection: 'row',
@@ -170,6 +203,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     marginBottom: spacing.md,
+  },
+  prayingForYou: {
+    alignSelf: 'flex-start',
+    marginLeft: spacing.md,
+    marginBottom: spacing.md,
+    paddingVertical: spacing.xs,
   },
   toolbar: {
     flexDirection: 'row',
@@ -203,4 +242,4 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-});
+}));

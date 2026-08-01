@@ -9,5 +9,6 @@ export { EmptyState } from './EmptyState';
 export { LoadingScreen } from './LoadingScreen';
 export { PremiumGate } from './PremiumGate';
 export { ErrorBoundary } from './ErrorBoundary';
+export { OfflineBanner } from './OfflineBanner';
 export { Calendar } from './Calendar';
 export { ModalHeader } from './ModalHeader';

@@ -1,5 +1,6 @@
 // D5 — couple-date lifecycle + scheduling helpers.
 import {
+  canRespondToSuggestion,
   getDateStatus,
   getDateTitle,
   partitionCoupleDates,
@@ -46,7 +47,7 @@ describe('partitionCoupleDates', () => {
     expect(saved.map((d) => d.id)).toEqual(['3']);
   });
   it('handles empty input', () => {
-    expect(partitionCoupleDates(null)).toEqual({ planned: [], saved: [], completed: [] });
+    expect(partitionCoupleDates(null)).toEqual({ suggested: [], planned: [], saved: [], completed: [] });
   });
 });
 
@@ -61,5 +62,38 @@ describe('getSchedulePresets', () => {
     expect(byKey['in-two-weeks']).toBe('2026-07-15');
     // every preset is strictly after "now"
     presets.forEach((p) => expect(p.date > '2026-07-01').toBe(true));
+  });
+});
+
+describe('Dates v2 suggestions (G2, 2026-07-19)', () => {
+  const suggested = { suggested_by: 'user-a', accepted_at: null, completed_at: null, scheduled_for: null };
+
+  it('derives the suggested status until accepted', () => {
+    expect(getDateStatus(suggested)).toBe('suggested');
+    expect(getDateStatus({ ...suggested, accepted_at: '2026-07-19' })).toBe('saved');
+    expect(getDateStatus({ ...suggested, accepted_at: '2026-07-19', scheduled_for: '2026-07-20' })).toBe('planned');
+    // Completion always wins
+    expect(getDateStatus({ ...suggested, completed_at: '2026-07-19' })).toBe('completed');
+  });
+
+  it('legacy rows without suggested_by behave exactly as before', () => {
+    expect(getDateStatus({ suggested_by: null, scheduled_for: '2026-07-20' })).toBe('planned');
+    expect(getDateStatus({})).toBe('saved');
+  });
+
+  it('partitions suggestions into their own bucket', () => {
+    const { suggested: sug, saved } = partitionCoupleDates([
+      { id: '1', ...suggested },
+      { id: '2', suggested_by: null },
+    ] as never[]);
+    expect(sug.map((d: { id: string }) => d.id)).toEqual(['1']);
+    expect(saved.map((d: { id: string }) => d.id)).toEqual(['2']);
+  });
+
+  it('only the NON-suggesting partner can respond', () => {
+    expect(canRespondToSuggestion(suggested, 'user-b')).toBe(true);
+    expect(canRespondToSuggestion(suggested, 'user-a')).toBe(false);
+    expect(canRespondToSuggestion(suggested, undefined)).toBe(false);
+    expect(canRespondToSuggestion({ ...suggested, accepted_at: '2026-07-19' }, 'user-b')).toBe(false);
   });
 });

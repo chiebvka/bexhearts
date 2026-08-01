@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from './Text';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import {
   MONTH_LABELS,
@@ -152,7 +153,7 @@ export function Calendar({ value, onSelect }: CalendarProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -199,4 +200,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: colors.text.primary,
   },
-});
+}));

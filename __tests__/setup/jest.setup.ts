@@ -81,16 +81,9 @@ jest.mock('react-native-purchases', () => ({
   LOG_LEVEL: { DEBUG: 'DEBUG' },
 }));
 
-// Mock Superwall
-jest.mock('@superwall/react-native-superwall', () => ({
-  __esModule: true,
-  default: {
-    configure: jest.fn(),
-    register: jest.fn(),
-    identify: jest.fn(),
-    reset: jest.fn(),
-  },
-}));
+// Superwall was REMOVED 2026-07-28 (SuperwallKit doesn't compile under Xcode
+// 26.6 and blocked the whole dev build; see src/services/superwall/client.ts).
+// No mock is needed — the wrapper no longer imports a native module.
 
 // Mock PostHog
 jest.mock('posthog-react-native', () => {

@@ -1,14 +1,18 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from './keys';
+import { notifyPartner, getMyFirstName } from './notifications';
 import { supabase } from '@/services/supabase/client';
 import { subscribeToJournal } from '@/services/supabase/realtime';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCoupleStore } from '@/stores/couple.store';
 import { buildTimeline, type TimelineEntry } from '@/features/journal/timeline';
-import { buildMemoryImageRows } from '@/features/journal/images';
-import { logActivity } from './activity';
-import { uploadImage } from './uploads';
+import { logActivity, todayYmd } from './activity';
+import { NEXT_VISIT_ICON } from '@/features/ldr/ldr';
+import { compressForUpload } from '@/lib/imageCompression';
+import { useUploadsStore, ensureHydrated } from '@/stores/uploads.store';
+import { processOutbox } from '@/services/uploads/worker';
+import type { UploadJob } from '@/features/uploads/outbox';
 import type { PickedImage } from '@/lib/imagePicker';
 import type { Memory, MemoryImage, MemoryReaction, Milestone, MilestoneInsert, MemoryInsert } from '@/types/api';
 
@@ -57,6 +61,30 @@ export function useTimeline() {
   });
 }
 
+// E12 — the soonest upcoming ✈️ visit, for the Home countdown. Deliberately
+// its own tiny query rather than reusing the timeline: Home shouldn't pull
+// memories, prayers and dates just to render one line.
+export function useNextVisit() {
+  const coupleId = useCoupleStore((s) => s.coupleId);
+
+  return useQuery({
+    queryKey: [...queryKeys.journal.milestones(coupleId!), 'next-visit'],
+    queryFn: async (): Promise<Milestone | null> => {
+      const { data, error } = await supabase
+        .from('couple_milestones')
+        .select('*')
+        .eq('couple_id', coupleId!)
+        .eq('icon', NEXT_VISIT_ICON)
+        .gte('event_date', todayYmd())
+        .order('event_date', { ascending: true })
+        .limit(1);
+      if (error) throw error;
+      return data?.[0] ?? null;
+    },
+    enabled: !!coupleId,
+  });
+}
+
 export function useCreateMilestone() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -77,6 +105,12 @@ export function useCreateMilestone() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.journal.timeline(coupleId!) });
       void logActivity('journal');
+      // G2 — the moment itself stays behind the tap; name + generic copy only.
+      notifyPartner({
+        category: 'partner_activity',
+        title: `${getMyFirstName()} added a moment to your story 🖼️`,
+        route: '/(tabs)/journal',
+      });
     },
   });
 }
@@ -97,7 +131,9 @@ export function useCreateMemory() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.journal.timeline(coupleId!) });
+      // Whole journal family, not just the timeline: a new ✈️ milestone also
+      // has to bust the Home next-visit countdown (E12).
+      queryClient.invalidateQueries({ queryKey: queryKeys.journal.all });
       void logActivity('journal');
     },
   });
@@ -105,7 +141,6 @@ export function useCreateMemory() {
 
 export function useUpdateMilestone() {
   const queryClient = useQueryClient();
-  const coupleId = useCoupleStore((s) => s.coupleId);
 
   return useMutation({
     mutationFn: async (
@@ -124,14 +159,15 @@ export function useUpdateMilestone() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.journal.timeline(coupleId!) });
+      // Editing a milestone can move or remove a visit date — bust the
+      // countdown too, not only the timeline.
+      queryClient.invalidateQueries({ queryKey: queryKeys.journal.all });
     },
   });
 }
 
 export function useDeleteMilestone() {
   const queryClient = useQueryClient();
-  const coupleId = useCoupleStore((s) => s.coupleId);
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -139,14 +175,17 @@ export function useDeleteMilestone() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.journal.timeline(coupleId!) });
+      // A deleted visit must clear the Home countdown immediately.
+      queryClient.invalidateQueries({ queryKey: queryKeys.journal.all });
     },
   });
 }
 
-// Upload picked photos to R2 (presigned by the edge function under
-// memories/<coupleId>/<memoryId>/) and attach them to the memory, ordered
-// after any existing images.
+// H2·M2 — queue picked photos into the persisted upload outbox instead of
+// uploading inline. Saving a memory is now instant on any network: each photo
+// is compressed (H2·M1), enqueued, and the background worker presigns + PUTs
+// to R2 + inserts its memory_images row when it lands (retries with backoff;
+// survives app restarts). Pending state surfaces via usePendingUploads.
 export function useAddMemoryImages() {
   const queryClient = useQueryClient();
   const coupleId = useCoupleStore((s) => s.coupleId);
@@ -157,28 +196,32 @@ export function useAddMemoryImages() {
       images: PickedImage[];
       startPosition?: number;
     }) => {
-      const imageUrls: string[] = [];
-      for (const image of input.images) {
-        imageUrls.push(
-          await uploadImage(
-            { kind: 'memory', memoryId: input.memoryId },
-            image.uri,
-            image.contentType
-          )
-        );
+      const { randomUUID } = await import('expo-crypto');
+      const now = Date.now();
+      const jobs: UploadJob[] = [];
+      for (let i = 0; i < input.images.length; i++) {
+        const compressed = await compressForUpload(input.images[i]);
+        jobs.push({
+          id: randomUUID(),
+          memoryId: input.memoryId,
+          coupleId: coupleId!,
+          uri: compressed.uri,
+          contentType: compressed.contentType,
+          position: (input.startPosition ?? 0) + i,
+          attempts: 0,
+          nextAttemptAt: now,
+          createdAt: now + i, // preserves the picked order in the queue
+        });
       }
 
-      const rows = buildMemoryImageRows({
-        memoryId: input.memoryId,
-        coupleId: coupleId!,
-        imageUrls,
-        startPosition: input.startPosition,
-      });
-      const { data, error } = await supabase.from('memory_images').insert(rows).select();
-      if (error) throw error;
-      return data;
+      // Hydrate first so enqueue can't clobber jobs persisted by a previous
+      // app session that haven't loaded yet.
+      await ensureHydrated();
+      useUploadsStore.getState().enqueue(jobs);
+      void processOutbox();
+      return jobs.length;
     },
-    onSuccess: (_data, input) => {
+    onSuccess: (_count, input) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.journal.memory(input.memoryId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.journal.timeline(coupleId!) });
     },
@@ -228,6 +271,12 @@ export function useReactToMemory(memoryId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.journal.memory(memoryId) });
+      // G2 — reactions are the smallest touch; still worth a gentle ping.
+      notifyPartner({
+        category: 'partner_activity',
+        title: `${getMyFirstName()} reacted to a moment 💜`,
+        route: '/(tabs)/journal',
+      });
     },
   });
 }

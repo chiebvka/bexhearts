@@ -13,6 +13,9 @@ This file is the shared instruction set for any AI agent working on Bexhearts �
 | **`docs/HANDOFF.md`** | **Resume brief** — paste-to-bootstrap a fresh session; running notes + current position + env gotchas. Keep updated as work progresses. | Starting a new chat / context full |
 | **`docs/PRIVACY_POLICY.md`** | **Data-handling draft** (attorney review pending) — what we collect/process/share/retain | Your change touches data collection, processing, sharing, or retention |
 | **`docs/TERMS_OF_SERVICE.md`** | **User-rights draft** (attorney review pending) — subscriptions, points, bans, deletion | Your change touches user rights, monetization, rewards, or enforcement |
+| **`docs/EDGE_FUNCTIONS.md`** | **Owner's ops guide** — run edge functions locally; deploy to self-hosted Supabase on Coolify (volume copy + restart, NOT `functions deploy`) | You're serving/deploying edge functions or touching function secrets |
+| **`docs/J1_F3_RUNBOOK.md`** | **Dev-build ops** — exact commands + pass/fail criteria for the iOS dev build, sandbox purchases (incl. the per-couple entitlement test), and the deferred H2 verification | You're building natively, testing purchases, or clearing H2 debt |
+| **`docs/APP_STORE.md`** | **Submission checklist** — demo account + review notes, disclosure copy, ASO, screenshots, privacy nutrition labels, compliance status, ES/PT listings | You're preparing or changing anything App Store Connect sees |
 | **`README.md`** | Environment setup, commands, how to run & test the app | You're setting up or running the app |
 | **`CLAUDE.md`** | The same rules as this file, for Claude Code. Keep in sync with this file. | (Claude reads that one) |
 
@@ -22,6 +25,8 @@ This file is the shared instruction set for any AI agent working on Bexhearts �
 - All Supabase table access goes through hooks in `src/api/` — screens never call `supabase.from()` directly.
 - Paid SDKs (RevenueCat, Superwall, PostHog) must keep degrading gracefully when env keys are placeholders.
 - Priority is functionality over UI polish until Phases 3–5 in `docs/PROGRESS.md` are verified working.
+- **Analytics events are STRUCTURAL ONLY** — never prayer text, journal content, check-in notes, names or emails. Add a new event property to the allowlist in `src/features/analytics/schema.ts` FIRST; anything not on it is dropped at runtime. That file is the enforcement point, not a convention.
+- **Query data must survive `JSON.parse(JSON.stringify(x))`** — the query cache persists to disk, and a Map/Set/Date comes back as the wrong shape (this shipped as a crash on 2026-07-25).
 - **Tests ship with the work, not after.** Every feature/bugfix includes unit tests in `__tests__/`; `npm run typecheck && npm run lint && npm test` must pass before a task is considered done.
 - **Render-verify UI work yourself before handing off (owner rule, 2026-07-04).** With the iOS sims running, drive the app: deep-link the screen (`xcrun simctl openurl <udid> "exp://127.0.0.1:8081/--/<route>"`), screenshot it (`xcrun simctl io <udid> screenshot out.png`), READ the screenshot, and scan device logs for JS errors (`xcrun simctl spawn <udid> log show --last 5m --predicate 'processImagePath CONTAINS "Expo"'`). Find and fix failures yourself first; only then ask the owner to test. List booted sims with `xcrun simctl list devices booted`.
 

@@ -1,8 +1,10 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { Text } from './Text';
 import { Button } from './Button';
+import { captureException } from '@/services/sentry';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 interface Props {
@@ -22,8 +24,9 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log to analytics/error reporting service
     console.error('ErrorBoundary caught:', error, errorInfo);
+    // H2·M5 — reports on builds with a Sentry DSN; silent no-op otherwise.
+    captureException(error);
   }
 
   render() {
@@ -51,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -66,4 +69,4 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     textAlign: 'center',
   },
-});
+}));

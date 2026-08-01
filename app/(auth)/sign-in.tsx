@@ -1,10 +1,11 @@
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { Link } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui';
 import { KeyboardAvoid } from '@/components/layout/KeyboardAvoid';
 import { SignInForm } from '@/features/auth';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 export default function SignInScreen() {
@@ -37,7 +38,7 @@ export default function SignInScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     paddingHorizontal: spacing.lg,
@@ -54,4 +55,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: spacing.xl,
   },
-});
+}));

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Pressable, StyleSheet, ActivityIndicator, Keyboard } from 'react-native';
+import { View, Pressable, ActivityIndicator, Keyboard } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,11 +9,14 @@ import { Input } from '@/components/ui/Input';
 import { FannedPolaroids, PhotoViewer, sortImageUrls } from '@/features/journal';
 import { useMemory, useReactToMemory, useAddMemoryImages } from '@/api/journal';
 import { useAuthStore } from '@/stores/auth.store';
+import { usePendingUploads } from '@/stores/uploads.store';
+import { pendingUploadLabel } from '@/features/uploads/outbox';
 import { useUIStore } from '@/stores/ui.store';
 import { pickImages } from '@/lib/imagePicker';
 import { formatDate } from '@/lib/dates';
 import { selectionHaptic, successHaptic } from '@/lib/haptics';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 const REACTIONS = [
@@ -29,6 +32,7 @@ export default function MemoryDetailScreen() {
   const react = useReactToMemory(id);
   const addImages = useAddMemoryImages();
   const showToast = useUIStore((s) => s.showToast);
+  const pendingUploads = usePendingUploads(id);
   const [note, setNote] = useState('');
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
@@ -66,12 +70,16 @@ export default function MemoryDetailScreen() {
           startPosition: memory.memory_images.length,
         },
         {
+          // H2·M2 — photos are queued into the outbox and upload in the
+          // background (retried on bad networks), so "added" lands instantly.
           onSuccess: () => {
             successHaptic();
-            showToast(picked.length > 1 ? 'Photos added 📷' : 'Photo added 📷', 'success');
+            showToast(
+              picked.length > 1 ? 'Photos saving 📷' : 'Photo saving 📷',
+              'success'
+            );
           },
-          onError: () =>
-            showToast("Couldn't upload — is the functions server running?", 'error'),
+          onError: () => showToast("Couldn't queue the photos — try again.", 'error'),
         }
       );
     }
@@ -105,6 +113,12 @@ export default function MemoryDetailScreen() {
           )}
         </Pressable>
       </View>
+
+      {pendingUploadLabel(pendingUploads, pendingUploads + imageUrls.length) ? (
+        <Text variant="labelSmall" color={colors.text.tertiary} style={styles.pendingLabel}>
+          {pendingUploadLabel(pendingUploads, pendingUploads + imageUrls.length)}
+        </Text>
+      ) : null}
 
       {viewerIndex !== null && (
         <PhotoViewer
@@ -190,7 +204,7 @@ export default function MemoryDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   center: {
     flex: 1,
     justifyContent: 'center',
@@ -231,6 +245,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
   },
+  pendingLabel: {
+    marginTop: spacing.xs,
+  },
   addPhotos: {
     width: 44,
     height: 44,
@@ -270,4 +287,4 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: colors.text.primary,
   },
-});
+}));

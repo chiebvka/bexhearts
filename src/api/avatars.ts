@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/services/supabase/client';
 import { useAuthStore } from '@/stores/auth.store';
 import { loadImagePicker } from '@/lib/imagePicker';
+import { compressForUpload } from '@/lib/imageCompression';
 import { uploadImage } from './uploads';
 import { queryKeys } from './keys';
 
@@ -51,10 +52,22 @@ export function useUploadAvatar() {
       if (result.canceled) return null;
 
       const asset = result.assets[0];
-      const contentType = asset.mimeType ?? 'image/jpeg';
+
+      // H2·M1 — resize/re-encode before upload (a raw camera-roll photo is
+      // 3–8 MB; the avatar renders at ~100px).
+      const compressed = await compressForUpload({
+        uri: asset.uri,
+        contentType: asset.mimeType ?? 'image/jpeg',
+        width: asset.width,
+        height: asset.height,
+      });
 
       // Presign (Edge Function) → PUT to R2 → persist the public URL.
-      const publicUrl = await uploadImage({ kind: 'avatar' }, asset.uri, contentType);
+      const publicUrl = await uploadImage(
+        { kind: 'avatar' },
+        compressed.uri,
+        compressed.contentType
+      );
       await setAvatar.mutateAsync(publicUrl);
       return publicUrl;
     },

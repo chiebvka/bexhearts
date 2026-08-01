@@ -20,11 +20,15 @@ interface OnboardingState {
   // Captured on the personalization screen (C1b); written to the profile and
   // kept here so the plan-summary screen can render without a refetch.
   growthFocus: GrowthFocus[];
+  // E11 — captured with the relationship stage; written onto the couple at
+  // creation (Profile toggle changes it later).
+  isLongDistance: boolean;
   setStep: (step: number) => void;
   setProfileData: (data: Partial<ProfileSetupData>) => void;
   setInviteCode: (code: string) => void;
   setRelationshipStage: (stage: RelationshipStage) => void;
   setGrowthFocus: (focus: GrowthFocus[]) => void;
+  setIsLongDistance: (isLongDistance: boolean) => void;
   reset: () => void;
 }
 
@@ -34,6 +38,7 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   inviteCode: null,
   relationshipStage: null,
   growthFocus: [],
+  isLongDistance: false,
 
   setStep: (currentStep) => set({ currentStep }),
 
@@ -48,6 +53,8 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
 
   setGrowthFocus: (growthFocus) => set({ growthFocus }),
 
+  setIsLongDistance: (isLongDistance) => set({ isLongDistance }),
+
   reset: () =>
     set({
       currentStep: 0,
@@ -55,5 +62,6 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
       inviteCode: null,
       relationshipStage: null,
       growthFocus: [],
+      isLongDistance: false,
     }),
 }));

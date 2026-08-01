@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { View, SectionList, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text, Button, Card, Badge, EmptyState, LoadingScreen } from '@/components/ui';
+import { Text, Button, Card, Badge, EmptyState, LoadingScreen, BackButton } from '@/components/ui';
 import {
   partitionBoundaryHistory,
   canDeactivate,
@@ -19,6 +19,7 @@ import { useMyProfile } from '@/api/profiles';
 import { formatDate } from '@/lib/dates';
 import { lightHaptic, successHaptic } from '@/lib/haptics';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import type { Boundary } from '@/types/api';
 
@@ -87,6 +88,7 @@ export default function BoundariesScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
+      <BackButton style={styles.back} />
       <View style={styles.header}>
         <Text variant="headlineLarge">Boundaries & Plans</Text>
         <Button
@@ -201,10 +203,15 @@ function BoundaryCard({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  // This screen is edge-to-edge (each section pads itself), so the back
+  // button needs the standard inset to line up with the title.
+  back: {
+    paddingLeft: spacing.md,
   },
   header: {
     flexDirection: 'row',
@@ -255,4 +262,4 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: spacing.sm,
   },
-});
+}));

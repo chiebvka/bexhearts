@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useOnboardingStore } from '@/stores/onboarding.store';
 import { useCoupleStore } from '@/stores/couple.store';
 import { createCouple, refreshInviteCode } from '@/services/supabase/database';
+import { identifyUser } from '@/services/revenuecat/client';
 import { track, ANALYTICS_EVENTS } from '@/services/analytics/events';
 import { getErrorMessage } from '@/utils/error';
 
@@ -11,6 +12,7 @@ export function useInviteCode() {
   const setInviteCode = useOnboardingStore((s) => s.setInviteCode);
   const inviteCode = useOnboardingStore((s) => s.inviteCode);
   const relationshipStage = useOnboardingStore((s) => s.relationshipStage);
+  const isLongDistance = useOnboardingStore((s) => s.isLongDistance);
   const setCoupleContext = useCoupleStore((s) => s.setCoupleContext);
   const coupleId = useCoupleStore((s) => s.coupleId);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,8 +28,11 @@ export function useInviteCode() {
       // createCouple generates a unique invite code (with collision retry).
       const couple = await createCouple(user.id, {
         relationship_stage: relationshipStage,
+        is_long_distance: isLongDistance,
       });
       setCoupleContext(couple.id, null);
+      // F2 — the couple now exists, so bill against it rather than the user.
+      void identifyUser(user.id, couple.id);
       setInviteCode(couple.invite_code);
       track(ANALYTICS_EVENTS.INVITE_CODE_GENERATED);
     } catch (err) {

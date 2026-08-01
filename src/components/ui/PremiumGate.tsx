@@ -6,7 +6,7 @@ import { Badge } from './Badge';
 import { Button } from './Button';
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
-import { useIsPremium } from '@/features/subscription/hooks/useEntitlement';
+import { useEntitlementAccess } from '@/features/subscription/hooks/useEntitlement';
 import { triggerPaywall } from '@/services/superwall/client';
 
 interface PremiumGateProps {
@@ -36,7 +36,9 @@ function DefaultLockedState({ onUnlock }: { onUnlock: () => void }) {
 }
 
 export function PremiumGate({ paywallEvent, children, fallback }: PremiumGateProps) {
-  const { isEntitled, isLoading } = useIsPremium();
+  // Same access answer as the app-wide gate — a comped user must not clear the
+  // tab gate and then be told to "Unlock Premium" on a feature.
+  const { isEntitled, isLoading } = useEntitlementAccess();
 
   if (isLoading) return null;
   if (isEntitled) return <>{children}</>;

@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { authService } from '@/services/supabase/auth';
+import { clearPushToken } from '@/services/notifications/client';
+import { useAuthStore } from '@/stores/auth.store';
 import { track, ANALYTICS_EVENTS } from '@/services/analytics/events';
 import { getErrorMessage } from '@/utils/error';
 import { withTimeout } from '@/utils/withTimeout';
 import { setLastUsedMethod } from '../lastUsedMethod';
-import { getAppleIdentityToken, getGoogleIdToken } from '../socialAuth';
+import { getAppleCredential, getGoogleIdToken } from '../socialAuth';
+import { storeAppleCredential, revokeAppleCredential } from '@/api/appleRevoke';
 import type { SignInFormData, SignUpFormData } from '../schemas';
 
 // Supabase returns this when a user signs in before confirming their email.
@@ -128,10 +131,16 @@ export function useAuth() {
     setError(null);
 
     try {
-      const token = await getAppleIdentityToken();
-      if (!token) return; // user cancelled the Apple sheet
-      const { error: authError } = await authService.signInWithApple(token);
+      const credential = await getAppleCredential();
+      if (!credential) return; // user cancelled the Apple sheet
+      const { error: authError } = await authService.signInWithApple(
+        credential.identityToken
+      );
       if (authError) throw authError;
+      // 5.1.1(v): trade the (≈5-minute) authorization code for a refresh token
+      // NOW, so account deletion can revoke it months from now. Awaited so it
+      // runs against a live session, but it can never fail the sign-in.
+      await storeAppleCredential(credential.authorizationCode);
       track(ANALYTICS_EVENTS.SIGN_IN, { method: 'apple' });
       void setLastUsedMethod('apple');
       // The AuthProvider listener routes us into the funnel; replace to be safe.
@@ -163,6 +172,10 @@ export function useAuth() {
   };
 
   const signOut = async () => {
+    // G1 token hygiene: stop this device receiving the outgoing user's
+    // pushes. Must run BEFORE signOut (needs the authed session), best-effort.
+    const userId = useAuthStore.getState().user?.id;
+    if (userId) await clearPushToken(userId);
     await authService.signOut();
     track(ANALYTICS_EVENTS.SIGN_OUT);
     router.replace('/(auth)/sign-in');
@@ -190,10 +203,30 @@ export function useAuth() {
         if (reauthError) throw reauthError;
       }
 
+      // 5.1.1(v): revoke the Apple tokens BEFORE requesting deletion, while the
+      // session is still valid — the edge function identifies the user from
+      // their JWT, so after sign-out it would be unauthenticated. No-ops for
+      // non-Apple accounts.
+      //
+      // `revokeAppleCredential` already swallows its own errors, and the catch
+      // here is deliberate belt-and-braces: deleting your account is the one
+      // flow that must never fail for a reason the user cannot act on, and a
+      // future refactor letting an error escape would silently break the exact
+      // thing Apple rejects builds over. The server sweep retries.
+      try {
+        await revokeAppleCredential();
+      } catch {
+        // Non-fatal by design — see above.
+      }
+
       const { error: deleteError } = await authService.requestAccountDeletion();
       if (deleteError) throw deleteError;
 
       track(ANALYTICS_EVENTS.ACCOUNT_DELETED);
+      // G1 token hygiene: the profile row survives the 7-day grace window,
+      // so the token must be cleared explicitly at request time.
+      const deletingUserId = useAuthStore.getState().user?.id;
+      if (deletingUserId) await clearPushToken(deletingUserId);
       await authService.signOut();
       router.replace('/(auth)/sign-in');
       return true;

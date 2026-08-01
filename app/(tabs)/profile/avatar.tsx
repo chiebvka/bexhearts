@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { useMyProfile } from '@/api/profiles';
 import { useSetAvatar, useUploadAvatar } from '@/api/avatars';
 import { PRESET_AVATAR_URLS } from '@/features/profile/presetAvatars';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 const PREVIEW_SIZE = 140;
@@ -119,7 +120,7 @@ export default function AvatarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   previewWrap: {
     alignItems: 'center',
     marginTop: spacing.lg,
@@ -160,4 +161,4 @@ const styles = StyleSheet.create({
   save: {
     marginTop: spacing.xl,
   },
-});
+}));

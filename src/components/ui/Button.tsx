@@ -25,28 +25,37 @@ interface ButtonProps {
   style?: ViewStyle;
 }
 
-const variantStyles: Record<ButtonVariant, { container: ViewStyle; text: TextStyle }> = {
-  primary: {
-    container: { backgroundColor: colors.primary[500] },
-    text: { color: colors.text.inverse },
-  },
-  secondary: {
-    container: { backgroundColor: colors.secondary[500] },
-    text: { color: colors.text.inverse },
-  },
-  outline: {
-    container: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.primary[500] },
-    text: { color: colors.primary[500] },
-  },
-  ghost: {
-    container: { backgroundColor: 'transparent' },
-    text: { color: colors.primary[500] },
-  },
-  danger: {
-    container: { backgroundColor: colors.error },
-    text: { color: colors.text.inverse },
-  },
-};
+// Function, not a module-scope map: the map would freeze light values at
+// import time (theme rule — see src/theme/colors.ts).
+function variantStyle(variant: ButtonVariant): { container: ViewStyle; text: TextStyle } {
+  switch (variant) {
+    case 'secondary':
+      return {
+        container: { backgroundColor: colors.secondary[500] },
+        text: { color: colors.text.inverse },
+      };
+    case 'outline':
+      return {
+        container: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.primary[500] },
+        text: { color: colors.primary[500] },
+      };
+    case 'ghost':
+      return {
+        container: { backgroundColor: 'transparent' },
+        text: { color: colors.primary[500] },
+      };
+    case 'danger':
+      return {
+        container: { backgroundColor: colors.error },
+        text: { color: colors.text.inverse },
+      };
+    default:
+      return {
+        container: { backgroundColor: colors.primary[500] },
+        text: { color: colors.text.inverse },
+      };
+  }
+}
 
 const sizeStyles: Record<ButtonSize, { container: ViewStyle; fontSize: number }> = {
   sm: { container: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md }, fontSize: 14 },
@@ -65,7 +74,7 @@ export function Button({
   style,
 }: ButtonProps) {
   const isDisabled = disabled || loading;
-  const vStyle = variantStyles[variant];
+  const vStyle = variantStyle(variant);
   const sStyle = sizeStyles[size];
 
   return (

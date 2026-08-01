@@ -1,4 +1,8 @@
-import { buildFocusQueue, isCrisisText } from '@/features/prayer/focus';
+import {
+  buildFocusQueue,
+  isCrisisText,
+  getComposeLimitMessage,
+} from '@/features/prayer/focus';
 import type { Prayer } from '@/types/api';
 
 const prayer = (overrides: Partial<Prayer>): Prayer =>
@@ -61,5 +65,22 @@ describe('isCrisisText', () => {
   it('passes ordinary requests', () => {
     expect(isCrisisText('Wisdom for our finances')).toBe(false);
     expect(isCrisisText(null)).toBe(false);
+  });
+});
+
+describe('getComposeLimitMessage (E9 rate-limit copy, owner-locked 2026-07-18)', () => {
+  it('day cap gently points to tomorrow AND to praying together now', () => {
+    const msg = getComposeLimitMessage('day');
+    expect(msg).toMatch(/tomorrow/i);
+    expect(msg).toMatch(/together|own words/i);
+    // Never error language (owner: subtle, warm — not a wall).
+    expect(msg).not.toMatch(/error|limit reached|denied|blocked/i);
+  });
+
+  it('month cap keeps the same warm register', () => {
+    const msg = getComposeLimitMessage('month');
+    expect(msg).toMatch(/month/i);
+    expect(msg).toMatch(/together/i);
+    expect(msg).not.toMatch(/error|denied|blocked/i);
   });
 });

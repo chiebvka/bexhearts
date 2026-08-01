@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View, SectionList, Pressable, StyleSheet } from 'react-native';
+import { View, SectionList, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { Text, EmptyState, LoadingScreen } from '@/components/ui';
 import { TimelineEntryCard } from '@/features/journal';
 import { useTimeline, useJournalRealtime } from '@/api/journal';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import type { TimelineEntry } from '@/features/journal';
 
@@ -113,7 +114,7 @@ export default function JournalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -144,4 +145,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     flexGrow: 1,
   },
-});
+}));

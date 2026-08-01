@@ -51,17 +51,29 @@ export const queryKeys = {
   entitlement: {
     all: ['entitlement'] as const,
     premium: () => [...queryKeys.entitlement.all, 'premium'] as const,
+    // Under the `entitlement` root on purpose: that root is on the
+    // NON_PERSISTED_KEY_ROOTS list (H2), so a revoked comp can never be
+    // restored from disk as still-granted after a cold start.
+    comp: () => [...queryKeys.entitlement.all, 'comp'] as const,
   },
   activity: {
     all: ['activity'] as const,
     byCoupleId: (coupleId: string) =>
       [...queryKeys.activity.all, coupleId] as const,
+    stats: (coupleId: string) =>
+      [...queryKeys.activity.all, coupleId, 'stats'] as const,
+    dailyCounts: (coupleId: string) =>
+      [...queryKeys.activity.all, coupleId, 'daily-counts'] as const,
   },
   points: {
     all: ['points'] as const,
     total: (coupleId: string) => [...queryKeys.points.all, coupleId, 'total'] as const,
     history: (coupleId: string) => [...queryKeys.points.all, coupleId, 'history'] as const,
     leaderboard: () => [...queryKeys.points.all, 'leaderboard'] as const,
+  },
+  notifications: {
+    all: ['notifications'] as const,
+    inbox: (userId: string) => [...queryKeys.notifications.all, userId] as const,
   },
   journal: {
     all: ['journal'] as const,

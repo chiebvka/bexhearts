@@ -1,6 +1,7 @@
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { Text } from './Text';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 interface LoadingScreenProps {
@@ -24,7 +25,7 @@ export function LoadingScreen({ message }: LoadingScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -34,4 +35,4 @@ const styles = StyleSheet.create({
   message: {
     marginTop: spacing.md,
   },
-});
+}));

@@ -36,6 +36,23 @@ Deno.serve(async (req) => {
   } = await supabase.auth.getUser();
   if (!user) return json({ error: 'Unauthorized' }, 401);
 
+  // Abuse guard (E9): 400 presigns/day per couple via the 00026 gate.
+  // Degrades open if the migration isn't applied yet.
+  try {
+    const { data: gate, error: gateError } = await supabase.rpc(
+      'consume_usage_credit',
+      { p_kind: 'upload_presign' }
+    );
+    if (!gateError && gate && gate.allowed === false) {
+      return json(
+        { error: 'Upload limit reached for today — try again tomorrow.' },
+        429
+      );
+    }
+  } catch {
+    // Gate unavailable — proceed rather than break uploads.
+  }
+
   const body = await req.json().catch(() => ({}));
   const contentType =
     typeof body.contentType === 'string' ? body.contentType : 'image/jpeg';

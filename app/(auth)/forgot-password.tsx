@@ -1,4 +1,4 @@
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useForm } from 'react-hook-form';
@@ -9,6 +9,7 @@ import { KeyboardAvoid } from '@/components/layout/KeyboardAvoid';
 import { useAuth } from '@/features/auth';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '@/features/auth/schemas';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
 export default function ForgotPasswordScreen() {
@@ -67,7 +68,7 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     paddingHorizontal: spacing.lg,
@@ -89,4 +90,4 @@ const styles = StyleSheet.create({
   backButton: {
     marginTop: spacing.md,
   },
-});
+}));

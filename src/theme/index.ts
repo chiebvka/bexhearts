@@ -5,6 +5,9 @@ import { shadows } from './shadows';
 import { borderRadius } from './borderRadius';
 
 export { colors, fonts, textStyles, spacing, shadows, borderRadius };
+export { themedStyles } from './themedStyles';
+export { useTheme, useThemeMode, resolveThemeMode } from './useTheme';
+export type { ThemeMode, ThemeColors } from './colors';
 export type { TextVariant, Spacing };
 
 export const theme = {

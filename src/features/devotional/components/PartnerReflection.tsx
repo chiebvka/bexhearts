@@ -1,6 +1,7 @@
-import { StyleSheet } from 'react-native';
+import {  } from 'react-native';
 import { Card, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import type { ReflectionRevealState } from '../reflectionReveal';
 
@@ -70,7 +71,7 @@ export function PartnerReflection({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: {
     marginTop: spacing.md,
   },
@@ -82,4 +83,4 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     lineHeight: 26,
   },
-});
+}));

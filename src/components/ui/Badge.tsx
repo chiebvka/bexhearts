@@ -12,15 +12,24 @@ interface BadgeProps {
   style?: ViewStyle;
 }
 
-const variantStyles: Record<BadgeVariant, { bg: string; text: string }> = {
-  default: { bg: colors.neutral[200], text: colors.text.secondary },
-  success: { bg: '#E8F5E9', text: colors.success },
-  warning: { bg: '#FFF8E1', text: colors.warning },
-  premium: { bg: colors.secondary[100], text: colors.secondary[700] },
-};
+// Function, not a module-scope map: the map would freeze light values at
+// import time (theme rule — see src/theme/colors.ts). The success/warning
+// pastels now come from the accent/secondary tint scales so they theme too.
+function variantStyle(variant: BadgeVariant): { bg: string; text: string } {
+  switch (variant) {
+    case 'success':
+      return { bg: colors.accent[100], text: colors.success };
+    case 'warning':
+      return { bg: colors.secondary[100], text: colors.warning };
+    case 'premium':
+      return { bg: colors.secondary[100], text: colors.secondary[700] };
+    default:
+      return { bg: colors.neutral[200], text: colors.text.secondary };
+  }
+}
 
 export function Badge({ label, variant = 'default', style }: BadgeProps) {
-  const v = variantStyles[variant];
+  const v = variantStyle(variant);
 
   return (
     <View style={[styles.badge, { backgroundColor: v.bg }, style]}>

@@ -1,0 +1,105 @@
+# The gate — typecheck, lint, tests.
+#
+# It exists because CLAUDE.md's rule ("npm run typecheck && npm run lint &&
+# npm test must pass before a task is done") only ever ran when a human or an
+# agent remembered to run it. That is not a gate, it's a habit — and the three
+# owner-found bugs of 2026-07-26 (the Map/cache crash, the cold-start
+# mis-route, the onboarding bypass) all shipped past it.
+name: Gate
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  # Lets the owner re-run the gate from the Actions tab without pushing.
+  workflow_dispatch:
+
+concurrency:
+  # A new push supersedes an in-flight run on the same branch.
+  group: gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # The app reads EXPO_PUBLIC_* at module scope. These are deliberately
+    # PLACEHOLDERS, not the real keys: every paid SDK must degrade gracefully
+    # when a key looks fake (the standing rule in CLAUDE.md), so CI running on
+    # placeholders is a continuous test of exactly that. Real secrets never
+    # need to enter CI for the gate to be meaningful.
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:55321
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_xxxxxxxxxxxxxxxxxxxxxx
+      EXPO_PUBLIC_REVENUECAT_IOS_KEY: appl_xxxxxxxxxxxxxxxxxxxxxxxx
+      EXPO_PUBLIC_REVENUECAT_ANDROID_KEY: goog_xxxxxxxxxxxxxxxxxxxxxxxx
+      EXPO_PUBLIC_SUPERWALL_IOS_KEY: pk_xxxxxxxxxxxxxxxxxxxxxxxx
+      EXPO_PUBLIC_POSTHOG_KEY: phc_xxxxxxxxxxxxxxxxxxxxxxxx
+      EXPO_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `ci` not `install`: the lockfile is the contract, and a silently
+      # resolved different version is exactly the drift CI should catch.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Runs even if typecheck failed, so one push surfaces every problem
+      # instead of one per round-trip.
+      - name: Lint
+        if: '!cancelled()'
+        run: npm run lint
+
+      - name: Test
+        if: '!cancelled()'
+        run: npm test -- --ci
+
+  # Migrations are applied BY HAND in Studio (hard rule in CLAUDE.md), so
+  # nothing here touches a database. This job only checks the things that go
+  # wrong when files are written by hand: a duplicate number, or an edit to a
+  # migration that has already been applied somewhere.
+  migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need history to tell "new file" from "edited applied file".
+          fetch-depth: 0
+
+      - name: No duplicate migration numbers
+        run: |
+          dupes=$(ls supabase/migrations/*.sql \
+            | xargs -n1 basename \
+            | grep -oE '^[0-9]{5}' \
+            | sort | uniq -d)
+          if [ -n "$dupes" ]; then
+            echo "::error::Duplicate migration number(s): $dupes"
+            exit 1
+          fi
+          echo "Migration numbering is unique."
+
+      - name: Applied migrations are append-only
+        # Schema changes are append-only (CLAUDE.md): once a numbered file has
+        # been pushed, the owner may already have run it in Studio, and editing
+        # it means the file and the live database disagree forever.
+        if: github.event_name == 'pull_request'
+        run: |
+          edited=$(git diff --name-only --diff-filter=M \
+            "origin/${{ github.base_ref }}"...HEAD -- 'supabase/migrations/*.sql' || true)
+          if [ -n "$edited" ]; then
+            echo "::error::Existing migration(s) modified — add a NEW numbered file instead:"
+            echo "$edited"
+            exit 1
+          fi
+          echo "No applied migrations were modified."

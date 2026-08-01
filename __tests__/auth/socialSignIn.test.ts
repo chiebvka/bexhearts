@@ -1,10 +1,21 @@
 import { renderHook, act } from '@testing-library/react-native';
 
+jest.mock('@/api/appleRevoke', () => ({
+  storeAppleCredential: jest.fn(),
+  revokeAppleCredential: jest.fn(),
+}));
+jest.mock('@/services/notifications/client', () => ({
+  clearPushToken: jest.fn(),
+  registerPushToken: jest.fn(),
+  requestNotificationPermission: jest.fn(),
+}));
+
 jest.mock('expo-router', () => ({
   router: { replace: jest.fn(), push: jest.fn() },
 }));
 
 jest.mock('@/features/auth/socialAuth', () => ({
+  getAppleCredential: jest.fn(),
   getAppleIdentityToken: jest.fn(),
   getGoogleIdToken: jest.fn(),
   isGoogleSignInConfigured: jest.fn(() => true),
@@ -19,10 +30,8 @@ jest.mock('@/services/supabase/auth', () => ({
 
 import { router } from 'expo-router';
 import { authService } from '@/services/supabase/auth';
-import {
-  getAppleIdentityToken,
-  getGoogleIdToken,
-} from '@/features/auth/socialAuth';
+import { getAppleCredential, getGoogleIdToken } from '@/features/auth/socialAuth';
+import { storeAppleCredential } from '@/api/appleRevoke';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
 type MockFn = ReturnType<typeof jest.fn>;
@@ -31,14 +40,18 @@ const mockAuth = authService as unknown as {
   signInWithApple: MockFn;
   signInWithGoogle: MockFn;
 };
-const mockGetAppleToken = getAppleIdentityToken as unknown as MockFn;
+const mockGetAppleCredential = getAppleCredential as unknown as MockFn;
+const mockStoreAppleCredential = storeAppleCredential as unknown as MockFn;
 const mockGetGoogleToken = getGoogleIdToken as unknown as MockFn;
 
 describe('useAuth.signInWithApple', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('exchanges the Apple identity token and routes into the app', async () => {
-    mockGetAppleToken.mockResolvedValue('apple-id-token');
+    mockGetAppleCredential.mockResolvedValue({
+      identityToken: 'apple-id-token',
+      authorizationCode: 'apple-auth-code',
+    });
     mockAuth.signInWithApple.mockResolvedValue({ error: null });
 
     const { result } = renderHook(() => useAuth());
@@ -52,7 +65,7 @@ describe('useAuth.signInWithApple', () => {
   });
 
   it('does nothing when the user cancels the Apple sheet', async () => {
-    mockGetAppleToken.mockResolvedValue(null);
+    mockGetAppleCredential.mockResolvedValue(null);
 
     const { result } = renderHook(() => useAuth());
     await act(async () => {
@@ -65,7 +78,10 @@ describe('useAuth.signInWithApple', () => {
   });
 
   it('surfaces an error when the Supabase exchange fails', async () => {
-    mockGetAppleToken.mockResolvedValue('apple-id-token');
+    mockGetAppleCredential.mockResolvedValue({
+      identityToken: 'apple-id-token',
+      authorizationCode: 'apple-auth-code',
+    });
     mockAuth.signInWithApple.mockResolvedValue({
       error: new Error('Provider not enabled'),
     });

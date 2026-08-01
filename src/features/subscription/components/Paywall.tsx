@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View, Pressable, StyleSheet, Linking } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Pressable, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Button, Text } from '@/components/ui';
 import { useUIStore } from '@/stores/ui.store';
@@ -8,8 +8,15 @@ import {
   purchaseTrial,
   restorePurchases,
 } from '@/services/revenuecat/client';
+import {
+  track,
+  trackPaywallShown,
+  trackTrialStarted,
+  ANALYTICS_EVENTS,
+} from '@/services/analytics/events';
 import { PRIVACY_POLICY_URL, TERMS_URL } from '@/constants/app';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import {
   PLAN_OPTIONS,
@@ -21,12 +28,21 @@ import {
 
 interface PaywallProps {
   onComplete: () => void;
+  /** Where this paywall was raised — the funnel's most diagnostic property. */
+  placement?: 'onboarding' | 'gate';
 }
 
-export function Paywall({ onComplete }: PaywallProps) {
+export function Paywall({ onComplete, placement = 'onboarding' }: PaywallProps) {
   const showToast = useUIStore((s) => s.showToast);
   const [plan, setPlan] = useState<PlanId>(DEFAULT_PLAN);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Phase 7 — the funnel step the whole hard-paywall bet turns on. Fires on
+  // RENDER, not on the tap, because the drop-off we need to see is the people
+  // who looked at the price and left.
+  useEffect(() => {
+    trackPaywallShown(placement);
+  }, [placement]);
 
   const onStart = async () => {
     // Dev / unconfigured — let the funnel through so everything stays testable.
@@ -37,8 +53,16 @@ export function Paywall({ onComplete }: PaywallProps) {
     setIsLoading(true);
     try {
       const ok = await purchaseTrial(plan);
-      if (ok) onComplete();
-      else showToast('That didn’t go through. Try again.', 'error');
+      if (ok) {
+        trackTrialStarted(plan);
+        onComplete();
+      } else {
+        // Cancel and failure are indistinguishable from purchaseTrial's
+        // boolean, and conflating them would be misleading: report the
+        // observable fact (no entitlement came back) rather than a guess.
+        track(ANALYTICS_EVENTS.SUBSCRIPTION_STARTED, { plan, result: 'cancelled' });
+        showToast('That didn’t go through. Try again.', 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -46,6 +70,10 @@ export function Paywall({ onComplete }: PaywallProps) {
 
   const onRestore = async () => {
     const restored = await restorePurchases();
+    track(ANALYTICS_EVENTS.RESTORE_PURCHASES, {
+      placement,
+      result: restored ? 'success' : 'nothing_to_restore',
+    });
     if (restored) onComplete();
     else showToast('Nothing to restore on this account.', 'info');
   };
@@ -149,7 +177,7 @@ export function Paywall({ onComplete }: PaywallProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -238,4 +266,4 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: spacing.lg,
   },
-});
+}));

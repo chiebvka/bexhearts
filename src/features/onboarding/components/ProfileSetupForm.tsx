@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { FormInput } from '@/components/forms/FormInput';
 import { Button, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { borderRadius } from '@/theme/borderRadius';
 import { useOnboardingStore } from '@/stores/onboarding.store';
 import { useUpdateProfile } from '@/api/profiles';
+import { trackOnboardingStep } from '@/services/analytics/events';
 import { profileSetupSchema, type ProfileSetupFormData } from '../schemas';
 
 const DENOMINATIONS = [
@@ -46,6 +48,7 @@ export function ProfileSetupForm() {
       denomination,
     });
 
+    trackOnboardingStep('profile_setup');
     router.push('/(onboarding)/relationship-stage');
   };
 
@@ -102,7 +105,7 @@ export function ProfileSetupForm() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
   },
@@ -138,4 +141,4 @@ const styles = StyleSheet.create({
   button: {
     marginTop: spacing.lg,
   },
-});
+}));

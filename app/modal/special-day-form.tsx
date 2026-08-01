@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Pressable, Alert, StyleSheet } from 'react-native';
+import { View, Pressable, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
@@ -10,14 +10,18 @@ import { useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from '@/ap
 import { getCountdown, MILESTONE_PRESETS } from '@/features/journal';
 import { formatDate } from '@/lib/dates';
 import { successHaptic, selectionHaptic } from '@/lib/haptics';
-import { colors } from '@/theme/colors';
+import { colors, lightColors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 
+// Deliberately snapshotted from the LIGHT palette: the picked swatch is
+// STORED on the milestone row as a concrete hex, so it must not drift with
+// the viewer's theme (both partners could be in different modes).
 const SWATCHES = [
-  colors.primary[500],
-  colors.secondary[500],
-  colors.accent[500],
-  colors.primary[300],
+  lightColors.primary[500],
+  lightColors.secondary[500],
+  lightColors.accent[500],
+  lightColors.primary[300],
 ];
 
 export default function SpecialDayFormModal() {
@@ -194,7 +198,7 @@ export default function SpecialDayFormModal() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   title: {
     marginBottom: spacing.lg,
   },
@@ -270,4 +274,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     padding: spacing.sm,
   },
-});
+}));

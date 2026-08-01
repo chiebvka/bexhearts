@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { FormInput } from '@/components/forms/FormInput';
 import { Button, Text } from '@/components/ui';
 import { colors } from '@/theme/colors';
+import { themedStyles } from '@/theme/themedStyles';
 import { spacing } from '@/theme/spacing';
 import { useCreatePrayer, useUpdatePrayer } from '@/api/prayers';
 
@@ -138,7 +139,7 @@ export function PrayerForm({ onSuccess, initial }: PrayerFormProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     padding: spacing.md,
   },
@@ -173,4 +174,4 @@ const styles = StyleSheet.create({
   visibilityText: {
     flex: 1,
   },
-});
+}));
